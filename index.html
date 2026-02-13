@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AyurSutra Patient Dashboard</title>
+    <style>
+        /* --- General Styles --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease-in-out;
+        }
+
+        body {
+            background-color: #f7fcf9;
+            color: #1a202c;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* --- Landing Page Styles --- */
+        #loginPage {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #f7fcf9, #e6f7e8);
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+        }
+        .landing-container {
+            display: flex;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            max-width: 1000px;
+            width: 100%;
+            overflow: hidden;
+            animation: slideInUp 1s ease-out forwards;
+        }
+        .login-card {
+            flex: 1;
+            padding: 50px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .login-card h2 {
+            margin-bottom: 25px;
+            color: #1a202c;
+        }
+        .login-card input, .login-card select, .login-card button {
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            font-size: 16px;
+            outline: none;
+        }
+        .login-card input:focus, .login-card select:focus {
+            border-color: #2ecc71;
+            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.5);
+        }
+        .login-card button {
+            background: #2ecc71;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+            border-radius: 50px;
+        }
+        .login-card button:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+        .login-error {
+            color: #c0392b;
+            margin-top: 10px;
+            font-weight: 500;
+            display: none;
+        }
+        .learn-card {
+            flex: 1;
+            padding: 50px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, #009688, #4CAF50);
+            position: relative;
+            overflow: hidden;
+            animation: slideInRight 1s ease-out forwards;
+        }
+        .learn-card h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        .learn-card p {
+            font-size: 1.1em;
+            line-height: 1.8;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        .learn-card button {
+            background: #FFC300;
+            color: #fff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 195, 0, 0.4);
+        }
+        .learn-card button:hover {
+            background: #e6b800;
+            transform: translateY(-2px);
+        }
+        .floating-leaf {
+            position: absolute;
+            animation: float 20s infinite ease-in-out;
+            opacity: 0;
+        }
+        .floating-leaf:nth-child(1) { top: 20%; left: 10%; transform: scale(1.5); animation-delay: 0s; }
+        .floating-leaf:nth-child(2) { top: 50%; left: 30%; transform: scale(1.2); animation-delay: 2s; }
+        .floating-leaf:nth-child(3) { top: 80%; left: 50%; transform: scale(1.8); animation-delay: 4s; }
+        .floating-leaf:nth-child(4) { top: 30%; left: 70%; transform: scale(1.0); animation-delay: 6s; }
+        .floating-leaf:nth-child(5) { top: 60%; left: 90%; transform: scale(1.6); animation-delay: 8s; }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            50% { transform: translateY(-50px) rotate(45deg); opacity: 1; }
+            100% { transform: translateY(0) rotate(0deg); opacity: 0; }
+        }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @media (max-width: 768px) {
+            .landing-container {
+                flex-direction: column;
+                max-width: 90%;
+            }
+            .login-card, .learn-card {
+                padding: 30px;
+            }
+        }
+
+        /* --- Header & Footer --- */
+        header {
+            background-color: #1B4332;
+            color: #fff;
+            padding: 15px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 20px;
+        }
+        .logo-link {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            fill: #FFC300;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        footer {
+            background-color: #1B4332;
+            color: #b3c6bb;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9em;
+            margin-top: auto;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+        .footer-links a {
+            color: #b3c6bb;
+            text-decoration: none;
+        }
+        .footer-links a:hover {
+            color: #fff;
+        }
+
+        /* --- Main Dashboard Layout & Styles --- */
+        #mainPage {
+            display: none;
+            flex-direction: row;
+            height: calc(100vh - 120px); /* Adjust for header/footer */
+            overflow: hidden;
+            margin: 0 20px;
+        }
+        .sidebar {
+            width: 260px;
+            background: #1B4332;
+            color: #fff;
+            padding: 30px 20px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 25px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            border-radius: 12px;
+        }
+        .sidebar h3 {
+            text-align: center;
+            width: 100%;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        .sidebar ul {
+            list-style: none;
+            width: 100%;
+        }
+        .sidebar ul li {
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            font-weight: 500;
+            background: #25583b;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .sidebar ul li:hover {
+            background: #2e6b46;
+        }
+        .sidebar ul li.active {
+            background: #FFC300;
+            color: #1a202c;
+            box-shadow: 0 4px 10px rgba(255, 195, 0, 0.4);
+            font-weight: 600;
+            transform: scale(1.02);
+        }
+        .sidebar-icon {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+        .content-section {
+            display: none;
+            padding-bottom: 30px; 
+            animation: slideIn 0.6s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        #dashboard {
+            display: block;
+        }
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .learn-ayurveda-container, .herbal-library-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+        .learn-ayurveda-container h2, .herbal-library-container h2 {
+            font-size: 2.5em;
+            color: #1B4332;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .learn-ayurveda-container p {
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+        .learn-ayurveda-container h3 {
+            font-size: 1.8em;
+            color: #FFC300;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .learn-ayurveda-container ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin-bottom: 20px;
+        }
+        .learn-ayurveda-container li {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 25px;
+        }
+        .learn-ayurveda-container li:before {
+            content: '🌿';
+            position: absolute;
+            left: 0;
+        }
+        .herbal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .herb-card {
+            background-color: #f7fcf9;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .herb-card img {
+            width: 100%;
+            max-height: 150px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .herb-card h4 {
+            font-size: 1.2em;
+            color: #1B4332;
+            margin-bottom: 5px;
+        }
+        .herb-card p {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #009688;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,150,136,0.3);
+            margin-bottom: 20px;
+        }
+        .back-button:hover {
+            background: #00796b;
+            transform: translateY(-2px);
+        }
+        /* --- Dashboard Specific Styles --- */
+        h1 {
+            font-weight: 700;
+            font-size: 2.8em;
+            color: #2c5282;
+        }
+        .subtitle {
+            font-size: 1.2em;
+            color: #5c6655;
+            margin-top: 5px;
+        }
+        .waving-hand {
+            display: inline-block;
+            animation: wave-animation 2.5s infinite;
+            transform-origin: 70% 70%;
+            font-size: 1.5em;
+        }
+        @keyframes wave-animation {
+            0% { transform: rotate(0deg); } 10% { transform: rotate(14deg); }
+            20% { transform: rotate(-8deg); } 30% { transform: rotate(14deg); }
+            40% { transform: rotate(-4deg); } 50% { transform: rotate(10deg); }
+            60% { transform: rotate(0deg); } 100% { transform: rotate(0deg); }
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            margin-top: 35px;
+        }
+        .card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-header {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #2c5282;
+            margin-bottom: 20px;
+        }
+        .card.profile-card {
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            gap: 30px;
+            padding: 40px;
+        }
+        .profile-photo {
+            width: 80px;
+            height: 80px;
+            background-color: #e6fffa;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            border: 3px solid #009688;
+            box-shadow: 0 0 0 4px rgba(0, 150, 136, 0.3);
+        }
+        .profile-photo span {
+            font-size: 4em;
+            color: #2c5282;
+        }
+        .profile-details h2 {
+            font-size: 1.6em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .profile-details p {
+            font-size: 1.1em;
+            color: #5c6655;
+            margin-top: 5px;
+        }
+        .dosha {
+            font-weight: 600;
+            color: #009688;
+        }
+        .dosha-label {
+            font-weight: 500;
+            color: #5c6655;
+        }
+        .dashboard-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        .calendar-card {
+            padding: 0;
+            overflow: hidden;
+        }
+        .calendar-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .calendar-body {
+            padding: 25px 30px;
+        }
+        .calendar-body table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 5px;
+            text-align: center;
+        }
+        .calendar-body th, .calendar-body td {
+            padding: 15px 5px;
+            font-size: 1.1em;
+            font-weight: 500;
+            border-radius: 8px;
+        }
+        .calendar-body th {
+            color: #718096;
+            font-size: 0.9em;
+            font-weight: 400;
+        }
+        .calendar-body td {
+            color: #5c6655;
+            font-weight: 500;
+        }
+        .calendar-body td.attended {
+            background-color: #009688;
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 150, 136, 0.4);
+        }
+        .calendar-body td.today {
+            background-color: #FFC300;
+            color: #1a202c;
+            box-shadow: 0 2px 5px rgba(255, 195, 0, 0.4);
+        }
+        .calendar-body td.upcoming {
+            background-color: #4CAF50;
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(76, 175, 80, 0.4);
+        }
+        .sessions-list {
+            list-style: none;
+        }
+        .sessions-list li {
+            padding: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sessions-list li:not(:last-child) {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .session-date {
+            font-weight: 600;
+            color: #5c6655;
+        }
+        .session-details {
+            text-align: right;
+        }
+        .session-name {
+            font-weight: 600;
+            color: #009688;
+        }
+        .session-time {
+            font-size: 0.9em;
+            color: #718096;
+            margin-top: 2px;
+        }
+        .progress-bar-container {
+            height: 10px;
+            background-color: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #009688;
+            width: 75%;
+            border-radius: 5px;
+            animation: progressAnim 1.5s ease-out forwards;
+        }
+        @keyframes progressAnim {
+            from { width: 0%; } to { width: 75%; }
+        }
+        .progress-text {
+            text-align: center;
+            font-weight: 600;
+            color: #5c6655;
+            margin-bottom: 20px;
+        }
+        .attended-sessions {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        .attended-sessions .session-name {
+            color: #009688;
+        }
+        .profile-content, .feedback-content, .reports-content {
+            background: #fff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            max-width: 900px;
+            margin: auto;
+        }
+        .profile-content h2, .feedback-content h2, .reports-content h2 {
+            font-size: 2em;
+            color: #2c5282;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .profile-photo-lg {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #FFC300;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(255, 195, 0, 0.3);
+        }
+        .profile-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .profile-detail-card {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .profile-detail-card strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+        .reports-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .reports-table th, .reports-table td {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .reports-table th {
+            background-color: #e6fffa;
+            font-weight: 600;
+            color: #009688;
+        }
+        .reports-table tr:hover {
+            background-color: #f7fafc;
+        }
+        .reports-table td a {
+            color: #FFC300;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .reports-table td a:hover {
+            text-decoration: underline;
+        }
+        .wellness-card {
+            background: linear-gradient(135deg, #009688, #4CAF50);
+            color: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+            animation: slideIn 0.8s ease-out forwards;
+        }
+        .wellness-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .wellness-card p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .feedback-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .feedback-form textarea {
+            min-height: 150px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            font-size: 16px;
+            outline: none;
+        }
+        .feedback-form button {
+            background: #009688;
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 150, 136, 0.3);
+            transform: translateY(0);
+        }
+        .feedback-form button:hover {
+            background: #00796b;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="#" class="logo-link" onclick="goBackToLanding()">
+        <!-- <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.366 14.866a7.95 7.95 0 0 1-5.12 2.508c-2.484-.52-4.06-2.85-3.54-5.334.52-2.484 2.85-4.06 5.334-3.54 2.484.52 4.06 2.85 3.54 5.334zm-1.898-1.898c.325.295.736.435 1.144.435.597 0 1.19-.285 1.55-.838.455-.69.324-1.636-.367-2.09-.69-.454-1.636-.324-2.09.367-.455.69-.324 1.636.367 2.09z" fill="#FFC300"/>
+        </svg> -->
+        <!-- <img src="logo.png"> -->
+        <div class="logo">AyurSutra</div>
+    </a>
+</header>
+
+<!-- Login Page -->
+ <div id="google_translate_element"></div>
+<div id="loginPage">
+    <div class="floating-leaf" style="top: 20%; left: 10%;"><svg width="24" height="24" viewBox="0 0 24 24" fill="#a5d6a7" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 16c-3.15-.35-5.61-2.9-6-6s2.85-5.61 6-6 6.35 2.9 6 6-2.85 5.61-6 6z"/></svg></div>
+    <div class="floating-leaf" style="top: 50%; left: 30%;"><svg width="24" height="24" viewBox="0 0 24 24" fill="#a5d6a7" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 16c-3.15-.35-5.61-2.9-6-6s2.85-5.61 6-6 6.35 2.9 6 6-2.85 5.61-6 6z"/></svg></div>
+    <div class="floating-leaf" style="top: 80%; left: 50%;"><svg width="24" height="24" viewBox="0 0 24 24" fill="#a5d6a7" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 16c-3.15-.35-5.61-2.9-6-6s2.85-5.61 6-6 6.35 2.9 6 6-2.85 5.61-6 6z"/></svg></div>
+    <div class="floating-leaf" style="top: 30%; left: 70%;"><svg width="24" height="24" viewBox="0 0 24 24" fill="#a5d6a7" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 16c-3.15-.35-5.61-2.9-6-6s2.85-5.61 6-6 6.35 2.9 6 6-2.85 5.61-6 6z"/></svg></div>
+    <div class="floating-leaf" style="top: 60%; left: 90%;"><svg width="24" height="24" viewBox="0 0 24 24" fill="#a5d6a7" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 16c-3.15-.35-5.61-2.9-6-6s2.85-5.61 6-6 6.35 2.9 6 6-2.85 5.61-6 6z"/></svg></div>
+    <div class="landing-container">
+        <div class="login-card">
+            <h2>AyurSutra Login</h2>
+            <input type="text" id="username" placeholder="Name">
+            <input type="password" id="password" placeholder="Password">
+            <select id="role">
+                <option value="patient">Patient</option>
+                <option value="practitioner">Practitioner</option>
+            </select>
+            <button onclick="login()">Login</button>
+            <p class="login-error" id="loginError"></p>
+        </div>
+        <div class="learn-card">
+            <h2>Learn About Ayurveda</h2>
+            <p>Discover the ancient science of life. Explore your Dosha, learn about wellness practices, and find your path to balance.</p>
+            <button onclick="learnMore()">Explore Now</button>
+        </div>
+    </div>
+</div>
+
+<!-- Main Page (Dashboard and Sidebar) -->
+<div id="mainPage">
+    <div class="sidebar">
+        <h3>Menu</h3>
+        <ul>
+            <li id="dashBtn" onclick="showSection('dashboard')" class="active">
+                <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                Dashboard
+            </li>
+            <li onclick="showSection('profile')">
+                <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                Profile
+            </li>
+            <li onclick="showSection('feedback')">
+                <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                Feedback
+            </li>
+            <li onclick="showSection('reports')">
+                <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Reports
+            </li>
+        </ul>
+    </div>
+    
+    <div class="content">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="content-section">
+            <div class="dashboard-container">
+                <h1>Welcome, Anil Kumar! <span class="waving-hand">👋</span></h1>
+                <p class="subtitle">Your Panchakarma journey is on track.</p>
+                
+                <div class="dashboard-grid">
+                    <div class="card profile-card">
+                        <div class="profile-photo">
+                            <span>👤</span>
+                        </div>
+                        <div class="profile-details">
+                            <h2>Anil Kumar</h2>
+                            <p>Age: 35 | Gender: Male</p>
+                            <p class="dosha-label">Dosha: <span class="dosha">Pitta-Kapha</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-info-grid">
+                        <div class="card calendar-card">
+                            <div class="calendar-header">
+                                <div class="card-header">Session Calendar</div>
+                            </div>
+                            <div class="calendar-body">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td></td><td class="attended">1</td><td class="attended">2</td><td>3</td><td class="attended">4</td><td class="attended">5</td><td class="attended">6</td>
+                                        </tr>
+                                        <tr>
+                                            <td>7</td><td class="attended">8</td><td>9</td><td>10</td><td>11</td><td class="upcoming">12</td><td>13</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="today">14</td><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td>
+                                        </tr>
+                                        <tr>
+                                            <td>21</td><td>22</td><td>23</td><td>24</td><td>25</td><td>26</td><td>27</td>
+                                        </tr>
+                                        <tr>
+                                            <td>28</td><td>29</td><td>30</td><td></td><td></td><td></td><td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card upcoming-card">
+                            <div class="card-header">Upcoming Sessions</div>
+                            <ul class="sessions-list">
+                                <li>
+                                    <div class="session-date">Sep 15</div>
+                                    <div class="session-details">
+                                        <div class="session-name">Abhyanga</div>
+                                        <div class="session-time">10:00 AM</div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="session-date">Sep 18</div>
+                                    <div class="session-details">
+                                        <div class="session-name">Shirodhara</div>
+                                        <div class="session-time">11:30 AM</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="card progress-card">
+                            <div class="card-header">Therapy Progress</div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar"></div>
+                            </div>
+                            <p class="progress-text">75% Completed</p>
+                            
+                            <div class="attended-sessions">
+                                <div class="card-header">Attended Sessions</div>
+                                <ul class="sessions-list">
+                                    <li>
+                                        <div class="session-date">08/09/2025</div>
+                                        <div class="session-name">Abhyanga</div>
+                                    </li>
+                                    <li>
+                                        <div class="session-date">05/09/2025</div>
+                                        <div class="session-name">Shirodhara</div>
+                                    </li>
+                                    <li>
+                                        <div class="session-date">02/09/2025</div>
+                                        <div class="session-name">Virechana</div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- New Wellness Tips Card -->
+                    <div class="card wellness-card">
+                        <h3>Daily Wellness Tip</h3>
+                        <p>Stay hydrated! Drinking a glass of warm water in the morning with a squeeze of lemon can help cleanse your system and boost your metabolism.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="profile" class="content-section">
+            <div class="profile-content">
+                <button class="back-button" onclick="showSection('dashboard')">
+                    <svg class="feather" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back
+                </button>
+                <div style="text-align:center;">
+                    <img src="https://placehold.co/150x150/e0f2f1/009688?text=👤" alt="Profile Photo" class="profile-photo-lg">
+                </div>
+                <h2>Anil Kumar's Profile</h2>
+                <div class="profile-details-grid">
+                    <div class="profile-detail-card"><strong>Full Name:</strong> Anil Kumar</div>
+                    <div class="profile-detail-card"><strong>Date of Birth:</strong> 12/03/1990</div>
+                    <div class="profile-detail-card"><strong>Gender:</strong> Male</div>
+                    <div class="profile-detail-card"><strong>Blood Group:</strong> O+</div>
+                    <div class="profile-detail-card"><strong>ABHA Number:</strong> 1234 5678 9012 3456</div>
+                    <div class="profile-detail-card"><strong>Aadhaar Number:</strong> 9876 5432 1098</div>
+                    <div class="profile-detail-card"><strong>Contact Number:</strong> +91 98765 43210</div>
+                    <div class="profile-detail-card"><strong>Email:</strong> anil.kumar@example.com</div>
+                    <div class="profile-detail-card"><strong>Medical History:</strong> Chronic Headaches, Low Immunity</div>
+                    <div class="profile-detail-card"><strong>Previous Health Conditions:</strong> Seasonal Allergies</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Section -->
+        <div id="feedback" class="content-section">
+            <div class="feedback-content">
+                <button class="back-button" onclick="showSection('dashboard')">
+                    <svg class="feather" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back
+                </button>
+                <h2>Feedback Section</h2>
+                <form class="feedback-form">
+                    <div class="profile-detail-card">
+                        <strong style="margin-bottom: 10px;">Your Feedback on the last session:</strong>
+                        <textarea placeholder="Share your experience..."></textarea>
+                    </div>
+                    <button>Submit Feedback</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div id="reports" class="content-section">
+            <div class="reports-content">
+                <button class="back-button" onclick="showSection('dashboard')">
+                    <svg class="feather" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back
+                </button>
+                <h2>Medical Reports & History</h2>
+                <table class="reports-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Report Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>July 25, 2025</td>
+                            <td><a href="#">Panchakarma Session Summary</a></td>
+                            <td>Complete</td>
+                        </tr>
+                        <tr>
+                            <td>June 10, 2025</td>
+                            <td><a href="#">Blood Test Report</a></td>
+                            <td>Complete</td>
+                        </tr>
+                        <tr>
+                            <td>May 15, 2025</td>
+                            <td><a href="#">Initial Lifestyle Assessment</a></td>
+                            <td>Complete</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- New Learn Ayurveda Section -->
+        <div id="learnAyurveda" class="content-section">
+            <div class="learn-ayurveda-container">
+                <button class="back-button" onclick="goBackToLanding()">
+                    <svg class="feather" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back to Login
+                </button>
+                <h2>Understanding Ayurveda</h2>
+                <p>Ayurveda, the "science of life," is a holistic system of medicine with a history spanning thousands of years. It is based on the principle that health and wellness depend on a delicate balance between the mind, body, and spirit. It offers a comprehensive approach to health, focusing on prevention and promoting well-being through lifestyle changes, diet, and herbal remedies.</p>
+
+                <h3>The Three Doshas: Vata, Pitta, Kapha</h3>
+                <p>According to Ayurveda, every individual is born with a unique constitution called a Dosha. The three Doshas—Vata, Pitta, and Kapha—govern our physical, mental, and emotional characteristics. Maintaining a balance among these three is key to a healthy life.</p>
+                <ul>
+                    <li>**Vata (Air & Ether):** Governs movement and communication. Associated with creativity, energy, and lightness.</li>
+                    <li>**Pitta (Fire & Water):** Governs metabolism and transformation. Associated with intelligence, digestion, and intensity.</li>
+                    <li>**Kapha (Earth & Water):** Governs structure and lubrication. Associated with stability, endurance, and calm.</li>
+                </ul>
+
+                <h3>Ayurvedic Principles</h3>
+                <p>Ayurvedic treatments are highly personalized, considering each individual's unique Dosha. Common practices include herbal medicine, massage (Abhyanga), detoxification (Panchakarma), and a personalized diet to restore balance.</p>
+                <button class="explore-herbal-button" onclick="showSection('herbalLibrary')">
+                    <svg class="feather" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.366 14.866a7.95 7.95 0 0 1-5.12 2.508c-2.484-.52-4.06-2.85-3.54-5.334.52-2.484 2.85-4.06 5.334-3.54 2.484.52 4.06 2.85 3.54 5.334zm-1.898-1.898c.325.295.736.435 1.144.435.597 0 1.19-.285 1.55-.838.455-.69.324-1.636-.367-2.09-.69-.454-1.636-.324-2.09.367-.455.69-.324 1.636.367 2.09z" fill="#fff" stroke="#fff" stroke-width="0"></path></svg>
+                    Explore Herbal Library
+                </button>
+            </div>
+        </div>
+
+        <!-- New Herbal Library Section -->
+        <div id="herbalLibrary" class="content-section">
+            <div class="herbal-library-container">
+                 <button class="back-button" onclick="showSection('learnAyurveda')">
+                    <svg class="feather" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back to Ayurveda
+                </button>
+                <h2>Herbal Library</h2>
+                <div class="herbal-grid">
+                    <div class="herb-card" onclick="showHerbDetails('Ashwagandha')">
+                        <img src="https://lalitenterprise.com/cdn/shop/files/Ashwagandha_Plant_3.webp?v=1757159315&width=1445" alt="Ashwagandha">
+                        <h4>Ashwagandha</h4>
+                        <p>An adaptogenic herb that helps the body manage stress.</p>
+                    </div>
+                    <div class="herb-card" onclick="showHerbDetails('Turmeric')">
+                        <img src="https://media.istockphoto.com/id/994652070/photo/turmeric-root-and-turmeric-powder-in-wooden-bowl-and-spoon-with-green-leaves-isolated-on-white.jpg?s=612x612&w=0&k=20&c=qIsl5dewtyQvCt6W6DxhU1BSOR1B7jd5FNwLY8rS6I4= " alt="Turmeric">
+                        <h4>Turmeric</h4>
+                        <p>A powerful anti-inflammatory and antioxidant.</p>
+                    </div>
+                    <div class="herb-card" onclick="showHerbDetails('Neem')">
+                        <img src="https://t3.ftcdn.net/jpg/00/43/55/08/360_F_43550882_xnytoLqeiZbYCGY6s4FCgd4D70X5NxWA.jpg" alt="Neem">
+                        <h4>Neem</h4>
+                        <p>Known for its potent antibacterial and antifungal properties.</p>
+                    </div>
+                    <div class="herb-card" onclick="showHerbDetails('Brahmi')">
+                        <img src="https://www.shutterstock.com/image-photo/fresh-brahmi-leaves-flowers-isolated-600nw-1998371810.jpg" alt="Brahmi">
+                        <h4>Brahmi</h4>
+                        <p>A brain tonic that enhances memory and cognitive function.</p>
+                    </div>
+                    <div class="herb-card" onclick="showHerbDetails('Tulsi')">
+                        <img src="https://img.freepik.com/premium-photo/medicinal-holy-basil-tulsi-leaves-white_525574-12844.jpg" alt="Tulsi">
+                        <h4>Tulsi</h4>
+                        <p>Also known as Holy Basil, it supports respiratory health.</p>
+                    </div>
+                    <div class="herb-card" onclick="showHerbDetails('Amla')">
+                        <img src="https://media.istockphoto.com/id/875499428/photo/pile-of-indian-gooseberry-fruit-with-green-leaves-isolated-on-white-background.jpg?s=612x612&w=0&k=20&c=Wsw9jxta5awhmkpA43c8gtYYaUhhY_7my8nkH1fczBk=" alt="Amla">
+                        <h4>Amla</h4>
+                        <p>Rich in Vitamin C, boosts immunity and aids digestion.</p>
+                    </div>
+                     <div class="herb-card" onclick="showHerbDetails('Giloy')">
+                        <img src="https://images.medicinenet.com/images/article/main_image/what-is-giloy-good-for.jpg?output-quality=75" alt="Giloy">
+                        <h4>Giloy</h4>
+                        <p>Boosts immunity and helps in fighting fever.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Herbal Details Pop-up (Hidden by default) -->
+        <div id="herbDetailsModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1001;">
+            <div style="background: #fff; padding: 40px; border-radius: 16px; max-width: 600px; width: 90%; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+                <h3 id="herbName" style="font-size: 2em; color: #1B4332; margin-bottom: 15px;"></h3>
+                <img id="herbImage" style="width: 200px; height: 200px; object-fit: contain; border-radius: 10px; margin-bottom: 20px;">
+                <p id="herbDescription" style="font-size: 1.1em; color: #6c757d; line-height: 1.6;"></p>
+                <button onclick="closeHerbDetails()" style="margin-top: 30px; background: #FFC300; color: #fff; padding: 10px 25px; border: none; border-radius: 50px; font-weight: 600; cursor: pointer;">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 AyurSutra. All rights reserved.</p>
+</footer>
+
+<script>
+    function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const role = document.getElementById('role').value;
+        const loginError = document.getElementById('loginError');
+
+        if (username.length > 0 && password.length > 0 && role === 'patient') {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainPage').style.display = 'flex';
+            showSection('dashboard');
+        } else {
+            loginError.textContent = 'Please provide a username and password to log in as a patient.';
+            loginError.style.display = 'block';
+        }
+    }
+
+    function learnMore() {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('mainPage').style.display = 'flex';
+        showSection('learnAyurveda');
+    }
+
+    function goBackToLanding() {
+        document.getElementById('mainPage').style.display = 'none';
+        document.getElementById('loginPage').style.display = 'flex';
+    }
+    
+    function showSection(sectionId) {
+        const sections = document.querySelectorAll('.content-section');
+        sections.forEach(section => {
+            section.style.display = 'none';
+        });
+
+        document.getElementById(sectionId).style.display = 'block';
+
+        const sidebarItems = document.querySelectorAll('.sidebar ul li');
+        sidebarItems.forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        const activeItem = document.querySelector(`.sidebar ul li[onclick*="${sectionId}"]`);
+        if (activeItem) {
+            activeItem.classList.add('active');
+        }
+    }
+
+    function showHerbDetails(herbName) {
+        const herbs = {
+            'Ashwagandha': {
+                image: 'https://lalitenterprise.com/cdn/shop/files/Ashwagandha_Plant_3.webp?v=1757159315&width=1445',
+                description: 'Ashwagandha (Withania somnifera) is an ancient medicinal herb. It is classified as an adaptogen, meaning it can help your body manage stress. It is known to boost brain function, lower blood sugar and cortisol levels, and help fight symptoms of anxiety and depression.'
+            },
+            'Turmeric': {
+                image: 'https://media.istockphoto.com/id/994652070/photo/turmeric-root-and-turmeric-powder-in-wooden-bowl-and-spoon-with-green-leaves-isolated-on-white.jpg?s=612x612&w=0&k=20&c=qIsl5dewtyQvCt6W6DxhU1BSOR1B7jd5FNwLY8rS6I4= ',
+                description: 'Turmeric (Curcuma longa) is a vibrant yellow spice widely used in Ayurvedic medicine. Its primary active component, curcumin, is a powerful anti-inflammatory and antioxidant. It is beneficial for skin health, digestive issues, and joint pain.'
+            },
+            'Neem': {
+                image: 'https://images.unsplash.com/photo-1606787948332-9b2f6b8c9d9d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                description: 'Neem (Azadirachta indica) is a revered tree in Ayurveda, known for its bitter taste and potent medicinal properties. It is a natural blood purifier, highly effective for skin diseases, and a strong antibacterial and antifungal agent.'
+            },
+            'Brahmi': {
+                image: 'https://images.unsplash.com/photo-1606787948332-9b2f6b8c9d9d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                description: 'Brahmi (Bacopa monnieri) is a well-known Ayurvedic herb for improving cognitive function. It is a brain tonic that helps enhance memory, concentration, and learning ability, making it a powerful herb for mental clarity.'
+            },
+            'Tulsi': {
+                image: 'https://images.unsplash.com/photo-1606787948332-9b2f6b8c9d9d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                description: 'Tulsi (Ocimum sanctum), or Holy Basil, is a sacred plant in India. It is known for its ability to boost immunity, reduce stress, and support respiratory health. Its leaves are often used to make tea, which is considered a powerful remedy for coughs and colds.'
+            },
+            'Amla': {
+                image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQr578hP_eYpQ1jWjXZBn5FygBPDg2kvhyi1g&s',
+                description: 'Amla (Indian Gooseberry) is a rich source of Vitamin C and antioxidants. It is known to boost immunity, promote hair and skin health, and aid in digestion.'
+            },
+            'Giloy': {
+                image: 'https://images.unsplash.com/photo-1606787948332-9b2f6b8c9d9d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                description: 'Giloy (Tinospora cordifolia) is a powerful immunomodulator. It is highly effective in treating fever, improving metabolism, and cleansing the blood.'
+            }
+        };
+
+        const herb = herbs[herbName];
+        if (herb) {
+            document.getElementById('herbName').textContent = herbName;
+            document.getElementById('herbImage').src = herb.image;
+            document.getElementById('herbDescription').textContent = herb.description;
+            document.getElementById('herbDetailsModal').style.display = 'flex';
+        }
+    }
+
+    function closeHerbDetails() {
+        document.getElementById('herbDetailsModal').style.display = 'none';
+    }
+</script>
+
+<!-- Feather Icons CDN -->
+<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+<script>
+    feather.replace();
+</script>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en', 
+     includedLanguages: 'hi,ta,te,ml,kn,gu,pa,bn,or,mr,as',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+  }, 'google_translate_element');
+}
+</script>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>

@@ -1,0 +1,450 @@
+see i want the project structure as api for the admin,doctor,pratitioner patient and reseption
+1.what to do as per roles:
+admin:
+1.can create login for doctor and pratitioner , reseption 
+2.can see all logs but can not modify or alter them
+3.can assign a new pratitioner to patient if the assgined pratitioner for patient is in leave
+4.can see all the ,doctor,pratitioner patient and reseption dashboards and check if the leave can be approved or not the leave is approved when the admin approve it
+5.the admin will not be visibel in login page it will have seperate page
+Doctor:
+1.Check the patient and assgins therepy and pratitioner for the patient (primary)
+2.Can track the patient treatment progress which is marked by the pratitioner in patient dashboard
+3.to get leave the leave will need to be approved by the admin only
+4.the Doctor will not be visibel in login page it will have seperate page
+5.can see patient can see his/her progress in their dashbord
+pratitioner:
+1.will do the therapy for his assigned patient and marks the progress
+2.to get leave the leave will need to be approved by the admin only
+3.the pratitioner will not be visibel in login page it will have seperate page
+4.pratitioner can see patient can see his/her progress in their dashbord
+Patient:
+1.Will resive the notification for next session
+2.Can view the patient dashboard and therapy room number and Docter room number
+3.can login from login page which is publicly visible(login type patient)
+4.patient can see his/her progress in their dashbord
+5.there should be a calender for terepy date in case the notification is not sent
+6.can see their perfered laguage in dashboard
+Reseption:
+1.Will check if the patient is present in the hospital list or not
+2.if present will assiging a doctor with less patients
+3.else not present new to hospital will take all deatials of the patient and create profile for patient and give login creditianls for the patient
+4.emegency cases will be assgined for senior doctors 
+5.can login from login page which is publicly visible(login type reseption)
+**************************************************************************************************
+2.details
+Security & Integrity:
+1.Immutable audit logs: append-only logs with server timestamp + optional hash chain to detect tampering. Admin can view only.
+2.Password hashing (bcrypt) even if stored locally / in-memory for demo.
+3.Session management + inactivity auto-logout.
+4.Role-based middleware on every API route (RBAC).
+Notifications & Scheduling:
+1.Server-side scheduler simulation for reminders (or client-side setInterval), plus a notification history endpoint.
+2.Calendar export (ICS) and calendar view for patient & receptionist.
+3.Priority/urgent flags (for emergency cases).
+Leave & Roster Management:
+1.Leave request lifecycle: submit → doctor/practitioner → admin approve/reject → notification.
+2.Automatic re-assignment for patients of staff on leave (configurable policy: best-balanced load OR same specialty).
+3.On-call roster for emergency routing to senior doctors.
+Data portability & backup:
+1.Export / Import JSON (clinic backup) and printable PDF report for patient therapy summary & prescriptions.
+2.Offline mode & local backup: export to device and restore.
+Clinical & UX improvements:
+1.Dosha-based quick tips and suggested herbs that appear in patient dashboard.
+2.Symptom trend graphs (Chart.js) for doctors & patients.
+3.Language preference per patient and translated UI strings (i18n). You already had Google Translate — add localized content too.
+Admin analytics & KPIs (judge-friendly):
+1.Daily patient count, average waiting time, room utilization, therapy success rate (derived from patient feedback), staff load balancing, top complaint categories.
+Docs & quality:
+1.OpenAPI (Swagger) spec for the API.
+2.Unit tests for API endpoints and integration tests for critical flows.
+3.Postman collection for demo.
+**********************************************************************
+3 — API structure & routes (complete, role-mapped):
+Below is an API design (HTTP REST). Use these endpoints for the backend. Add RBAC checks on each endpoint.
+Convention: X = Admin only, A/D/P/R/PAT show permitted role(s): Admin(A), Doctor(D), Practitioner(P), Reception(R), Patient(PAT).
+Auth & Session:
+POST /api/auth/login
+body: { username, password, role }
+roles allowed: public; returns token + session info
+POST /api/auth/logout
+body: { } token-based; logs logout event
+POST /api/auth/patient/signup — (R or public)
+body: { username, password, name, age, language, contact }
+action: create patient; add PATIENT_SIGNUP log
+POST /api/auth/refresh — refresh JWT
+Users & Roles:
+GET /api/admin/users — (A) list all users with role filter
+POST /api/admin/users — (A) create user (doctor/practitioner/reception)
+body: { username, password, name, role, specialty?, contact }
+action: adds ADMIN_CREATED_USER log
+PATCH /api/admin/users/:id — (A) enable/disable user (do not alter logs)
+GET /api/users/:id — (A/D/P/R/PAT) view user profile (role-scoped)
+DELETE /api/admin/users/:id — (A) soft-delete
+Patients:
+GET /api/patients — (A/D/P/R) list patients (pagination, search)
+POST /api/patients — (R/D/P) create patient (reception or doctor)
+body: patient demographic + ABHA, preferred language
+GET /api/patients/:id — (A/D/P/R/PAT) view patient profile + therapies
+PATCH /api/patients/:id — (A/D/R) update (only allowed fields)
+GET /api/patients/:id/progress — (D/P/PAT) symptom trends & therapy progress
+POST /api/patients/:id/checkin — (R) reception marks present (creates visit token)
+Therapies & Sessions:
+POST /api/therapies — (D) create therapy plan (for a patient)
+body: { patientId, doctorId, primaryPractitionerId, therapyType, phase, startDate, durationDays, room, herbs[] }
+action: THERAPY_ASSIGNED log
+GET /api/therapies/:id — (A/D/P/R/PAT) view plan
+POST /api/therapies/:id/sessions — (P) practitioner records a session result
+body: { date, practitionerId, notes, attended, progressPercent, vitals?, images[] }
+action: SESSION_RECORDED log
+PATCH /api/therapies/:id/assign-practitioner — (D/A) reassign practitioner (for leave)
+GET /api/therapies/:id/history — (D/P/PAT) session history
+Leave & Roster:
+POST /api/leaves — (D/P) submit leave request
+body: { userId, fromDate, toDate, reason, emergencyCoverRequired }
+action: LEAVE_REQUESTED log
+GET /api/leaves — (A/D) list leave requests (admin approves)
+PATCH /api/leaves/:id — (A) approve/reject
+body: { status: 'approved'|'rejected', approvedBy }
+action: LEAVE_APPROVED or LEAVE_REJECTED log
+POST /api/roster/auto-assign — (A) run reassign algorithm (also auto-run when leave approved)
+Reception flows:
+GET /api/reception/waiting-list — (R) current waiting patients
+POST /api/reception/checkin — (R) checkin a patient (creates visit)
+POST /api/reception/create-patient — (R) create new patient + auto-generate credentials
+Notifications & Calendar:
+GET /api/notifications — (user) list notifications
+POST /api/notifications/send — (A/D) send reminder to patient (simulated for demo)
+POST /api/calendar/ics — (user) generate ICS export for therapy schedule
+Logs & Audit (Admin view only):
+GET /api/logs — (A) read-only, filterable by user, action, date
+log items example: { id, userId, userRole, action, resourceId?, details?, timestamp, hash? }
+Reports & Exports:
+GET /api/reports/clinic-metrics — (A) KPIs
+GET /api/patients/:id/export — (A/D/PAT) export patient data JSON/PDF
+Health & Ready endpoints
+GET /api/health — check server health
+
+*****************************************************************
+4 — Sample JSON data models (core entities)
+
+Use these shapes for localStorage or in-memory server state.
+
+User
+{
+  "id":"u_123",
+  "username":"doc1",
+  "passwordHash":"$2b$...",
+  "name":"Dr. Vaidya",
+  "role":"DOCTOR", // ADMIN | DOCTOR | PRACTITIONER | RECEPTION | PATIENT
+  "specialty":"Panchakarma",
+  "contact":"9876543210",
+  "language":"hi",
+  "enabled": true,
+  "createdAt":"2026-02-13T12:00:00Z"
+}
+
+Patient
+{
+  "id":"p_123",
+  "name":"Amit Kumar",
+  "dob":"1985-08-20",
+  "age":40,
+  "gender":"Male",
+  "dosha":"Pitta",
+  "preferredLanguage":"hi",
+  "abha": "1234567890123456",
+  "contacts": {"phone":"", "email":""},
+  "assignedDoctorId":"u_doc1",
+  "assignedPractitionerId":"u_prac1",
+  "therapies":[ "t_001" ],
+  "createdAt":"..."
+}
+
+Therapy
+{
+  "id":"t_001",
+  "patientId":"p_123",
+  "doctorId":"u_doc1",
+  "primaryPractitionerId":"u_prac1",
+  "type":"Virechana",
+  "phase":"PRADHANAKARMA",
+  "startDate":"2026-02-20",
+  "durationDays":7,
+  "room":"R-101",
+  "herbs":[ "Giloy" ],
+  "status":"ONGOING"
+}
+
+Session (progress)
+{
+  "id":"s_001",
+  "therapyId":"t_001",
+  "date":"2026-02-21T09:00:00Z",
+  "practitionerId":"u_prac1",
+  "notes":"session completed; tolerated well",
+  "progressPercent":15,
+  "vitals":{"pulse":78, "bp":"120/80"},
+  "attachments":[],
+  "createdAt":"..."
+}
+
+Log
+{
+  "id":"l_001",
+  "userId":"u_admin",
+  "userRole":"ADMIN",
+  "action":"ADMIN_CREATED_DOCTOR",
+  "resourceId":"u_doc1",
+  "details":"Created doctor doc1 for Panchakarma",
+  "timestamp":"2026-02-13T12:05:00Z",
+  "hash":"<optional>"
+}
+
+******************************************************************
+5 — Critical workflows (sequence descriptions)
+A. Admin creates doctor & practitioner
+Admin POST /api/admin/users → creates user (role DOCTOR/ PRACTITIONER / RECEPTION)
+System stores user, writes log ADMIN_CREATED_USER
+Reception / Doctor notified (optional)
+B. Reception check-in & new-patient creation
+Reception searches waiting list /api/reception/waiting-list
+If patient not found → POST /api/reception/create-patient → patient created + credentials returned + PATIENT_SIGNUP log
+Reception assigns to a doctor with less load (call /api/reception/assign-doctor), or in emergency assign senior doctor
+C. Doctor assigns therapy
+Doctor POST /api/therapies with therapy plan
+System schedules sessions (array) and assigns primary practitioner (or receptionist assists)
+THERAPY_ASSIGNED log created
+D. Practitioner marks progress & doctor tracks
+Practitioner POST /api/therapies/:id/sessions with session report
+System updates therapy progress percent (sum of session progress or algorithm)
+Doctor GET /api/patients/:id/progress sees updated charts
+E. Leave approval & automatic reassignment
+Practitioner or Doctor POST /api/leaves
+Admin reviews GET /api/leaves and PATCH to approve
+On approve, system calls /api/roster/auto-assign → reassigns patients from absent practitioner to available ones (policy: least load) and writes PRAC_REASSIGNED logs
+***************************************************************
+6 — Additional technical & UX notes
+RBAC & UI
+Hide Admin/Doctor/Practitioner login links from public login page as you asked: create separate admin portal URLs (e.g., /admin/login, /doctor/login, /practitioner/login) and only show patient / reception logins publicly. Authentication routes still centralized.
+Logs immutability (demo approach)
+If you don’t want server persistence, compute hash = sha256(JSON.stringify(log) + previousHash) and keep array in localStorage—this makes tampering detectable in demo.
+Notification & offline
+Use Service Worker + Push API for real push in PWA; otherwise simulate reminders with timers and persist notification history in localStorage.
+Internationalization
+Save preferredLanguage on patient profile; store translations in JSON dictionaries and switch UI labels on login.
+Data export
+Add buttons “Export clinic JSON” & “Export patient PDF”. Good for judges.
+Validation & constraints
+Validate therapy dates, overlapping sessions, practitioner availability, room conflicts in scheduling function.
+Testing & docs
+Provide OpenAPI spec and a Postman collection to quickly show endpoints during demo.
+
+********************************************************************
+7 — What else can be added (short prioritized list)
+Must-have (for SIH/demo):
+Immutable audit logs (append-only)
+Leave approval flow + auto reassign
+Reception check-in flow + emergency routing
+Notifications & calendar export
+RBAC middleware and separate login pages
+Nice-to-have (judges love):
+Dosha-based recommendations + symptom trending graphs
+Exportable patient summary PDF & prescription generation
+Dashboard KPIs for admin (utilization, throughput)
+PWA + offline mode + local backup/restore
+OpenAPI + Postman collection + demo seed data
+Stretch goals (bonus):
+FHIR-like JSON output for future integration with AyushGrid / ABHA placeholders
+Rule-based clinical decision support (simple alerts)
+Hash-chained logs for tamper evidence
+-------------------------------------------------------------------------------------------------------------------------------------------
+PART 1 — AYURSUTRA ROLE-WISE SYSTEM DESCRIPTION (FINAL TEXT)
+Admin
+
+Can create login credentials for Doctor, Practitioner, and Reception users.
+
+Can view all system activity logs but cannot modify, delete, or alter any log entry to maintain transparency and audit integrity.
+
+Can reassign a new practitioner to a patient if the currently assigned practitioner is on approved leave.
+
+Can view dashboards of all roles (Doctor, Practitioner, Patient, Reception) and approve or reject leave requests submitted by doctors or practitioners.
+
+The Admin login is hidden from the public login page and is accessible only through a separate secure admin portal.
+
+Doctor
+
+Examines the patient and assigns therapy and primary practitioner for treatment.
+
+Can track complete treatment progress recorded by the practitioner in the patient’s therapy dashboard.
+
+To take leave, the leave request must be approved by the Admin.
+
+The Doctor login is not visible on the public login page and is available only through a separate secure doctor portal.
+
+Can view patient progress dashboards, including therapy completion, symptom trends, and recovery status.
+
+Practitioner (Therapist)
+
+Performs the assigned therapy sessions for patients and updates treatment progress after each session.
+
+To take leave, the leave request must be approved by the Admin.
+
+The Practitioner login is hidden from the public login page and accessible only through a separate practitioner portal.
+
+Can view patient therapy progress and session history related to the patients assigned to them.
+
+Patient
+
+Receives notifications for upcoming therapy sessions.
+
+Can view the patient dashboard, including:
+
+Assigned therapy
+
+Therapy room number
+
+Doctor consultation room number
+
+Can log in through the publicly visible login page using Patient login type.
+
+Can track personal treatment progress through charts, session history, and recovery indicators.
+
+Has access to a therapy calendar view to check session dates if notifications are missed.
+
+Can view the preferred language setting in the dashboard for multilingual accessibility.
+
+Reception
+
+Checks whether the patient already exists in the hospital system.
+
+If present, assigns the patient to a doctor with the least current patient load.
+
+If the patient is new, collects full patient details, creates the patient profile, and generates login credentials.
+
+Emergency cases are directly assigned to senior doctors for immediate consultation.
+
+Can log in from the publicly visible login page using Reception login type.
+
+PART 2 — SYSTEM ARCHITECTURE DIAGRAM (TEXT EXPLANATION)
+Overall Architecture Type
+
+AyurSutra follows a Role-Based Healthcare Web Architecture consisting of:
+
+1. Frontend Layer
+
+Separate dashboards:
+
+Admin Portal
+
+Doctor Portal
+
+Practitioner Portal
+
+Patient Portal
+
+Reception Portal
+
+Each dashboard communicates with the same backend API using secure role-based authentication.
+
+2. Backend Layer (Core Engine)
+
+Node.js + Express API Server
+
+Responsible for:
+
+Authentication & role validation
+
+Patient, therapy, and session management
+
+Leave approval workflow
+
+Notifications & scheduling
+
+Immutable audit logging
+
+3. Data Layer
+
+For MVP:
+
+Browser localStorage / in-memory JSON store
+
+No external database required
+
+Designed to be future-upgradeable to PostgreSQL/FHIR
+
+4. Security Layer
+
+Includes:
+
+Role-Based Access Control (RBAC)
+
+Hidden admin/doctor/practitioner portals
+
+Immutable audit logs
+
+Session timeout handling
+
+PART 3 — COMPLETE API MAP (ROLE-WISE)
+Authentication APIs
+
+POST /api/auth/login
+
+POST /api/auth/logout
+
+POST /api/auth/patient-signup
+
+Admin APIs
+
+POST /api/admin/users/create
+
+GET /api/admin/users
+
+GET /api/admin/logs
+
+POST /api/admin/leave/approve
+
+POST /api/admin/practitioner/reassign
+
+GET /api/admin/dashboard/overview
+
+Doctor APIs
+
+GET /api/doctor/patients
+
+POST /api/doctor/assign-therapy
+
+GET /api/doctor/patient-progress/:id
+
+POST /api/doctor/leave-request
+
+Practitioner APIs
+
+GET /api/practitioner/assigned-patients
+
+POST /api/practitioner/update-session
+
+GET /api/practitioner/patient-progress/:id
+
+POST /api/practitioner/leave-request
+
+Patient APIs
+
+GET /api/patient/dashboard
+
+GET /api/patient/therapy-calendar
+
+GET /api/patient/progress
+
+GET /api/patient/notifications
+
+Reception APIs
+
+GET /api/reception/patient-search
+
+POST /api/reception/create-patient
+
+POST /api/reception/assign-doctor
+
+POST /api/reception/emergency-assign
+
+-------------------------------------------------------------------------------------------------------------------------------------------
