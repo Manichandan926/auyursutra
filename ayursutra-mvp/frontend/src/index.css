@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --primary-color: #0ea5e9;
-  --secondary-color: #8b5cf6;
+  --primary-color: #b45309;
+  --secondary-color: #f59e0b;
   --success-color: #22c55e;
   --warning-color: #f59e0b;
   --danger-color: #ef4444;
   --dark-bg: #1f2937;
-  --light-bg: #f9fafb;
+  --light-bg: #fffbf0;
 }
 
 body {
@@ -18,14 +18,16 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #fffbf0 0%, #f3e8d8 100%);
+  min-height: 100vh;
 }
 
 .card {
-  @apply bg-white rounded-lg shadow-md p-6 border border-gray-200;
+  @apply bg-white rounded-xl shadow-lg p-6 border border-amber-100 hover:shadow-xl transition;
 }
 
 .btn-primary {
-  @apply bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg transition;
+  @apply bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-700 hover:to-yellow-600 text-white font-bold py-3 px-6 rounded-lg transition shadow-lg;
 }
 
 .btn-secondary {
@@ -33,19 +35,71 @@ body {
 }
 
 .btn-danger {
-  @apply bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition;
+  @apply bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg;
+}
+
+.btn-success {
+  @apply bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg;
 }
 
 .badge {
-  @apply inline-block px-3 py-1 rounded-full text-sm font-semibold;
+  @apply inline-block px-4 py-2 rounded-full text-sm font-bold;
 }
 
 .badge-primary {
-  @apply badge bg-sky-100 text-sky-800;
+  @apply badge bg-amber-100 text-amber-800;
 }
 
 .badge-success {
   @apply badge bg-green-100 text-green-800;
+}
+
+.badge-warning {
+  @apply badge bg-yellow-100 text-yellow-800;
+}
+
+.badge-danger {
+  @apply badge bg-red-100 text-red-800;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Form inputs */
+input:focus, select:focus, textarea:focus {
+  @apply border-amber-600 shadow-md;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f3e8d8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #b45309;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #92400e;
 }
 
 .badge-warning {

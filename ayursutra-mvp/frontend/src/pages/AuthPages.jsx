@@ -63,35 +63,40 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-8">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 flex items-center justify-center py-12 px-4 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-10 left-10 text-6xl opacity-20 animate-pulse">🌿</div>
+      <div className="absolute bottom-10 right-10 text-5xl opacity-20 animate-pulse">🏥</div>
+      
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-10 border border-amber-100 relative z-10">
         {/* Branding */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-sky-600 mb-2">
+          <div className="text-5xl mb-4">🏥 🌿</div>
+          <h1 className="text-4xl font-black text-amber-700 mb-2">
             {t('app.title')}
           </h1>
-          <p className="text-gray-600">{t('app.subtitle')}</p>
+          <p className="text-amber-600 font-semibold text-sm">{t('app.subtitle')}</p>
         </div>
 
         {error && <ErrorAlert message={error} onClose={() => setError('')} />}
 
         {/* Role Selection */}
-        <div className="mb-6">
-          <label className="block text-gray-700 font-semibold mb-3">
-            {t('login.role')} (Public Access)
+        <div className="mb-8">
+          <label className="block text-gray-700 font-bold mb-3 text-center">
+            {t('login')}
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             {Object.entries(roles).map(([key, role]) => (
               <button
                 key={key}
                 onClick={() => setActiveRole(key)}
-                className={`flex-1 py-2 rounded font-semibold transition ${
+                className={`flex-1 py-3 rounded-lg font-bold transition transform hover:scale-105 ${
                   activeRole === key
-                    ? 'bg-sky-600 text-white'
+                    ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-white shadow-lg'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {role.label}
+                {role.label === 'Patient' ? '👤' : '👨‍💼'} {role.label}
               </button>
             ))}
           </div>
@@ -104,6 +109,7 @@ export const LoginPage = () => {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            placeholder="Enter your username"
             required
             disabled={loading}
           />
@@ -113,6 +119,7 @@ export const LoginPage = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
             required
             disabled={loading}
           />
@@ -120,18 +127,25 @@ export const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary disabled:opacity-50"
+            className="w-full py-3 mt-6 bg-gradient-to-r from-amber-600 to-yellow-500 text-white font-bold rounded-lg hover:shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? t('common.loading') : t('login.loginButton')}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <LoadingSpinner size="sm" />
+                {t('common.loading')}
+              </div>
+            ) : (
+              `🔐 ${t('login.loginButton')}`
+            )}
           </button>
         </form>
 
         {/* Signup Link */}
         {activeRole === 'patient' && (
-          <div className="mt-4 text-center">
+          <div className="mt-6 text-center pt-6 border-t border-amber-200">
             <button
               onClick={handleSignup}
-              className="text-sky-600 hover:text-sky-700 font-semibold"
+              className="text-amber-600 font-bold hover:text-amber-700 underline hover:no-underline"
             >
               {t('login.signupLink')}
             </button>
@@ -139,9 +153,14 @@ export const LoginPage = () => {
         )}
 
         {/* Hidden Portals Info */}
-        <div className="mt-6 pt-6 border-t border-gray-200 text-xs text-gray-500 text-center">
-          <p>Admin, Doctor, Practitioner have separate portals:</p>
-          <p className="mt-1">/admin/login • /doctor/login • /practitioner/login</p>
+        <div className="mt-8 p-4 bg-amber-50 rounded-lg border border-amber-200 text-sm">
+          <p className="font-bold text-amber-700 mb-2">📋 Demo Credentials:</p>
+          <div className="space-y-1 text-gray-700">
+            <p>👤 Patient: patient1 / patient123</p>
+            <p>👨‍⚕️ Doctor: doctor1 / doctor123</p>
+            <p>🏥 Admin: admin / admin123</p>
+            <p className="text-xs text-gray-500 mt-2">Practitioner: prac1 / prac123</p>
+          </div>
         </div>
       </div>
     </div>
@@ -194,93 +213,107 @@ export const PatientSignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-8">
-        <h1 className="text-3xl font-bold text-sky-600 mb-2 text-center">
-          New Patient Registration
-        </h1>
-        <p className="text-gray-600 text-center mb-6">AyurSutra Health Portal</p>
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 flex items-center justify-center py-12 px-4 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-10 left-10 text-6xl opacity-20 animate-pulse">🌿</div>
+      <div className="absolute bottom-10 right-10 text-5xl opacity-20 animate-pulse">💚</div>
+      
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-10 border border-amber-100 relative z-10">
+        {/* Branding */}
+        <div className="text-center mb-8">
+          <div className="text-5xl mb-4">👤 🌿</div>
+          <h1 className="text-4xl font-black text-amber-700 mb-2">
+            Patient Registration
+          </h1>
+          <p className="text-amber-600 font-semibold text-sm">Join the AyurSutra Health Community</p>
+        </div>
 
         {error && <ErrorAlert message={error} onClose={() => setError('')} />}
         {success && <SuccessAlert message={success} onClose={() => setSuccess('')} />}
 
-        <form onSubmit={handleSignup}>
+        <form onSubmit={handleSignup} className="space-y-4">
           <FormGroup
-            label="Full Name"
+            label="👤 Full Name"
             type="text"
             name="name"
             value={formData.name}
             onChange={handleChange}
+            placeholder="Your full name"
             required
             disabled={loading}
           />
 
           <FormGroup
-            label={t('login.username')}
+            label="🔐 Username"
             type="text"
             name="username"
             value={formData.username}
             onChange={handleChange}
+            placeholder="Choose a username"
             required
             disabled={loading}
           />
 
           <FormGroup
-            label={t('login.password')}
+            label="🔑 Password"
             type="password"
             name="password"
             value={formData.password}
             onChange={handleChange}
+            placeholder="Create a strong password"
             required
             disabled={loading}
           />
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-4">
             <FormGroup
-              label="Age"
+              label="📅 Age"
               type="number"
               name="age"
               value={formData.age}
               onChange={handleChange}
+              placeholder="Your age"
               required
               disabled={loading}
             />
             <FormGroup
-              label="Phone"
+              label="📱 Phone"
               type="tel"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
+              placeholder="10-digit number"
               required
               disabled={loading}
             />
           </div>
 
           <FormGroup
-            label="Email"
+            label="📧 Email"
             type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
+            placeholder="your.email@example.com"
             disabled={loading}
           />
 
           <FormGroup
-            label="Dosha"
+            label="🌾 Dosha (Body Constitution)"
             type="select"
             name="dosha"
             value={formData.dosha}
             onChange={handleChange}
             disabled={loading}
           >
-            <option value="Vata">Vata</option>
-            <option value="Pitta">Pitta</option>
-            <option value="Kapha">Kapha</option>
-            <option value="Tridosha">Tridosha</option>
+            <option value="Vata">Vata - Air & Ether</option>
+            <option value="Pitta">Pitta - Fire & Water</option>
+            <option value="Kapha">Kapha - Water & Earth</option>
+            <option value="Tridosha">Tridosha - Balanced</option>
           </FormGroup>
 
           <FormGroup
-            label="Language"
+            label="🌐 Language"
             type="select"
             name="language"
             value={formData.language}
@@ -294,17 +327,24 @@ export const PatientSignupPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary disabled:opacity-50"
+            className="w-full py-3 mt-6 bg-gradient-to-r from-amber-600 to-yellow-500 text-white font-bold rounded-lg hover:shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? t('common.loading') : 'Create Account'}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <LoadingSpinner size="sm" />
+                Creating Account...
+              </div>
+            ) : (
+              '✨ Create My Account'
+            )}
           </button>
 
           <button
             type="button"
             onClick={() => navigate('/login')}
-            className="w-full btn-secondary mt-2"
+            className="w-full py-3 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 transition"
           >
-            Back to Login
+            ← Back to Login
           </button>
         </form>
       </div>
@@ -345,30 +385,37 @@ export const AdminLoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-8 border-2 border-red-600">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-amber-50 flex items-center justify-center py-12 px-4 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-10 left-10 text-6xl opacity-20 animate-pulse">⚙️</div>
+      <div className="absolute bottom-10 right-10 text-5xl opacity-20 animate-pulse">🛡️</div>
+      
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-10 border-2 border-red-400 relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-red-600 mb-2">Admin Portal</h1>
-          <p className="text-gray-600">Restricted Access</p>
+          <div className="text-5xl mb-4">🛡️ ⚙️</div>
+          <h1 className="text-4xl font-black text-red-700 mb-2">Admin Portal</h1>
+          <p className="text-red-600 font-semibold text-sm">🔐 Restricted Access Only</p>
         </div>
 
         {error && <ErrorAlert message={error} onClose={() => setError('')} />}
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} className="space-y-4">
           <FormGroup
-            label={t('login.username')}
+            label="🔐 Admin Username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            placeholder="Enter admin username"
             required
             disabled={loading}
           />
 
           <FormGroup
-            label={t('login.password')}
+            label="🔑 Password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter password"
             required
             disabled={loading}
           />
@@ -376,18 +423,25 @@ export const AdminLoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50"
+            className="w-full py-3 mt-6 bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold rounded-lg hover:shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? t('common.loading') : 'Admin Login'}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <LoadingSpinner size="sm" />
+                Authenticating...
+              </div>
+            ) : (
+              '🔐 Admin Login'
+            )}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-6 pt-6 border-t border-red-200">
           <button
             onClick={() => navigate('/login')}
-            className="text-gray-600 hover:text-gray-800"
+            className="w-full text-red-600 font-bold hover:text-red-700 underline hover:no-underline"
           >
-            Back to Main Login
+            ← Back to Main Login
           </button>
         </div>
       </div>
@@ -427,30 +481,37 @@ export const DoctorLoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-8 border-2 border-emerald-600">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center py-12 px-4 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-10 left-10 text-6xl opacity-20 animate-pulse">👨‍⚕️</div>
+      <div className="absolute bottom-10 right-10 text-5xl opacity-20 animate-pulse">💊</div>
+      
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-10 border-2 border-emerald-400 relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-emerald-600 mb-2">Doctor Portal</h1>
-          <p className="text-gray-600">Medical Professional Access</p>
+          <div className="text-5xl mb-4">👨‍⚕️ 💚</div>
+          <h1 className="text-4xl font-black text-emerald-700 mb-2">Doctor Portal</h1>
+          <p className="text-emerald-600 font-semibold text-sm">🏥 Medical Professional Access</p>
         </div>
 
         {error && <ErrorAlert message={error} onClose={() => setError('')} />}
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} className="space-y-4">
           <FormGroup
-            label={t('login.username')}
+            label="🔐 Doctor Username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            placeholder="Enter doctor username"
             required
             disabled={loading}
           />
 
           <FormGroup
-            label={t('login.password')}
+            label="🔑 Password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter password"
             required
             disabled={loading}
           />
@@ -458,18 +519,25 @@ export const DoctorLoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50"
+            className="w-full py-3 mt-6 bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold rounded-lg hover:shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? t('common.loading') : 'Doctor Login'}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <LoadingSpinner size="sm" />
+                Authenticating...
+              </div>
+            ) : (
+              '👨‍⚕️ Doctor Login'
+            )}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-6 pt-6 border-t border-emerald-200">
           <button
             onClick={() => navigate('/login')}
-            className="text-gray-600 hover:text-gray-800"
+            className="w-full text-emerald-600 font-bold hover:text-emerald-700 underline hover:no-underline"
           >
-            Back to Main Login
+            ← Back to Main Login
           </button>
         </div>
       </div>
@@ -509,30 +577,37 @@ export const PractitionerLoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-8 border-2 border-purple-600">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 flex items-center justify-center py-12 px-4 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-10 left-10 text-6xl opacity-20 animate-pulse">🧘</div>
+      <div className="absolute bottom-10 right-10 text-5xl opacity-20 animate-pulse">✨</div>
+      
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-10 border-2 border-purple-400 relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-purple-600 mb-2">Practitioner Portal</h1>
-          <p className="text-gray-600">Therapist Access</p>
+          <div className="text-5xl mb-4">🧘 💜</div>
+          <h1 className="text-4xl font-black text-purple-700 mb-2">Practitioner Portal</h1>
+          <p className="text-purple-600 font-semibold text-sm">🌂 Therapist Professional Access</p>
         </div>
 
         {error && <ErrorAlert message={error} onClose={() => setError('')} />}
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} className="space-y-4">
           <FormGroup
-            label={t('login.username')}
+            label="🔐 Practitioner Username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            placeholder="Enter practitioner username"
             required
             disabled={loading}
           />
 
           <FormGroup
-            label={t('login.password')}
+            label="🔑 Password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter password"
             required
             disabled={loading}
           />
@@ -540,18 +615,25 @@ export const PractitionerLoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50"
+            className="w-full py-3 mt-6 bg-gradient-to-r from-purple-600 to-indigo-500 text-white font-bold rounded-lg hover:shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? t('common.loading') : 'Practitioner Login'}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <LoadingSpinner size="sm" />
+                Authenticating...
+              </div>
+            ) : (
+              '🧘 Practitioner Login'
+            )}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-6 pt-6 border-t border-purple-200">
           <button
             onClick={() => navigate('/login')}
-            className="text-gray-600 hover:text-gray-800"
+            className="w-full text-purple-600 font-bold hover:text-purple-700 underline hover:no-underline"
           >
-            Back to Main Login
+            ← Back to Main Login
           </button>
         </div>
       </div>
