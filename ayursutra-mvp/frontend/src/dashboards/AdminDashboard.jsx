@@ -1,317 +1,335 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Stat, Card, Table, FormGroup, ErrorAlert, LoadingSpinner, TabBar, Modal } from '../components/Common';
-import { adminAPI, generalAPI } from '../services/api';
+import React, { useState } from 'react';
+import { Card, Stat, Modal, FormGroup, LoadingSpinner, ErrorAlert, SuccessAlert, TabBar, Table } from '../components/Common';
 
-export const AdminDashboard = () => {
-  const { t } = useTranslation();
-  const [metrics, setMetrics] = useState(null);
-  const [leaves, setLeaves] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [showCreateUserModal, setShowCreateUserModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [showCredentialModal, setShowCredentialModal] = useState(false);
+  const [credentialForm, setCredentialForm] = useState({
+    role: 'doctor',
+    name: '',
+    email: '',
+    password: ''
+  });
+  const [formErrors, setFormErrors] = useState({});
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  // Mock data
+  const [credentials, setCredentials] = useState([
+    { id: 1, role: 'Doctor', name: 'Dr. Raj Kumar', email: 'raj@hospital.com', created: '2026-02-10', status: 'Active' },
+    { id: 2, role: 'Practitioner', name: 'Priya Singh', email: 'priya@hospital.com', created: '2026-02-09', status: 'Active' },
+    { id: 3, role: 'Reception', name: 'Amit Patel', email: 'amit@hospital.com', created: '2026-02-08', status: 'Inactive' }
+  ]);
 
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      const [metricsResp, leavesResp, usersResp] = await Promise.all([
-        adminAPI.getDashboard(),
-        adminAPI.getLeaves(),
-        adminAPI.listUsers()
-      ]);
+  const [activityLogs, setActivityLogs] = useState([
+    { id: 1, timestamp: '2026-02-13 10:45', user: 'Dr. Raj Kumar', action: 'Assigned therapy to Patient#1', type: 'Therapy Assignment' },
+    { id: 2, timestamp: '2026-02-13 09:30', user: 'Priya Singh', action: 'Completed session for Patient#5', type: 'Session Completion' },
+    { id: 3, timestamp: '2026-02-13 08:15', user: 'Amit Patel', action: 'Check-in Patient#8', type: 'Check-in' },
+    { id: 4, timestamp: '2026-02-12 16:20', user: 'Dr. Sharma', action: 'Requested leave for 5 days', type: 'Leave Request' },
+    { id: 5, timestamp: '2026-02-12 14:00', user: 'System', action: 'Backup completed successfully', type: 'System' }
+  ]);
 
-      setMetrics(metricsResp.data.metrics);
-      setLeaves(leavesResp.data.leaves);
-      setUsers(usersResp.data.users);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load dashboard');
-    } finally {
-      setLoading(false);
-    }
+  const [leaveRequests, setLeaveRequests] = useState([
+    { id: 1, name: 'Dr. Sharma', role: 'Doctor', reason: 'Personal emergency', dateFrom: '2026-02-20', dateTo: '2026-02-25', status: 'Pending' },
+    { id: 2, name: 'Priya Singh', role: 'Practitioner', reason: 'Scheduled vacation', dateFrom: '2026-03-01', dateTo: '2026-03-10', status: 'Pending' },
+    { id: 3, name: 'Rohan Das', role: 'Doctor', reason: 'Medical appointment', dateFrom: '2026-02-15', dateTo: '2026-02-15', status: 'Approved' }
+  ]);
+
+  const [reassignmentData, setReassignmentData] = useState([
+    { id: 1, patient: 'Patient#10', currentPractitioner: 'Priya Singh (On Leave)', newPractitioner: 'Ravi Kumar', status: 'Pending' },
+    { id: 2, patient: 'Patient#12', currentPractitioner: 'Rohan Das (On Leave)', newPractitioner: 'Sofia Martinez', status: 'Completed' }
+  ]);
+
+  const validateForm = () => {
+    const errors = {};
+    if (!credentialForm.name.trim()) errors.name = 'Name is required';
+    if (!credentialForm.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) errors.email = 'Valid email is required';
+    if (credentialForm.password.length < 8) errors.password = 'Password must be at least 8 characters';
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
-  const handleApproveLeave = async (leaveId) => {
-    try {
-      await adminAPI.approveLeave(leaveId);
-      await loadDashboardData();
-    } catch (err) {
-      setError('Failed to approve leave');
-    }
+  const handleCreateCredential = async () => {
+    if (!validateForm()) return;
+    
+    setLoading(true);
+    await new Promise(r => setTimeout(r, 1000));
+    
+    const newCred = {
+      id: credentials.length + 1,
+      role: credentialForm.role.charAt(0).toUpperCase() + credentialForm.role.slice(1),
+      name: credentialForm.name,
+      email: credentialForm.email,
+      created: new Date().toISOString().split('T')[0],
+      status: 'Active'
+    };
+    
+    setCredentials([...credentials, newCred]);
+    setSuccessMsg(`✅ Credentials created for ${credentialForm.name}`);
+    setCredentialForm({ role: 'doctor', name: '', email: '', password: '' });
+    setFormErrors({});
+    setShowCredentialModal(false);
+    setLoading(false);
+    setTimeout(() => setSuccessMsg(''), 3000);
   };
 
-  const handleRejectLeave = async (leaveId) => {
-    try {
-      await adminAPI.rejectLeave(leaveId, 'Rejected by admin');
-      await loadDashboardData();
-    } catch (err) {
-      setError('Failed to reject leave');
-    }
+  const handleLeaveAction = (id, action) => {
+    setLeaveRequests(prev => prev.map(req => 
+      req.id === id ? { ...req, status: action === 'approve' ? 'Approved' : 'Rejected' } : req
+    ));
+    setSuccessMsg(`✅ Leave request ${action === 'approve' ? 'approved' : 'rejected'}`);
+    setTimeout(() => setSuccessMsg(''), 3000);
   };
 
-  if (loading) return <LoadingSpinner />;
+  const handleReassignment = (id) => {
+    setReassignmentData(prev => prev.map(item => 
+      item.id === id ? { ...item, status: 'Completed' } : item
+    ));
+    setSuccessMsg('✅ Practitioner reassignment completed');
+    setTimeout(() => setSuccessMsg(''), 3000);
+  };
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: '📊' },
+    { id: 'users', label: 'Users', icon: '👥' },
+    { id: 'leaves', label: 'Leave Requests', icon: '📋' },
+    { id: 'reassignments', label: 'Reassignments', icon: '♻️' },
+    { id: 'audit', label: 'Audit Logs', icon: '📜' },
+  ];
+
+  const auditColumns = [
+    { key: 'user', label: 'User' },
+    { key: 'action', label: 'Action' },
+    { key: 'type', label: 'Type' }, // Fixed: Changed 'target' to 'type' to match your state data
+    { key: 'timestamp', label: 'Timestamp' },
+  ];
 
   return (
-    <div className="space-y-6">
-      {error && <ErrorAlert message={error} onClose={() => setError('')} />}
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-red-50 to-orange-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-4xl font-black text-red-800 mb-2">🔐 Admin Dashboard</h1>
+          <p className="text-red-700 font-semibold">Complete system management and oversight</p>
+        </div>
 
-      <TabBar
-        tabs={[
-          { id: 'overview', label: 'Overview' },
-          { id: 'users', label: 'Users' },
-          { id: 'leaves', label: 'Leave Requests' },
-          { id: 'logs', label: 'Audit Logs' }
-        ]}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+        {successMsg && <SuccessAlert message={successMsg} onClose={() => setSuccessMsg('')} />}
+        {errorMsg && <ErrorAlert message={errorMsg} onClose={() => setErrorMsg('')} />}
 
-      {activeTab === 'overview' && metrics && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Stat label="Total Patients" value={metrics.totalPatients} color="sky" />
-            <Stat label="Active Therapies" value={metrics.ongoingTherapies} color="emerald" />
-            <Stat label="Success Rate" value={`${metrics.successRate}%`} color="green" />
-            <Stat label="Doctors" value={metrics.totalDoctors} color="blue" />
-            <Stat label="Practitioners" value={metrics.totalPractitioners} color="purple" />
-            <Stat label="Pending Leaves" value={metrics.pendingLeaveRequests} color="amber" />
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Stat label="Total Users" value={credentials.length} icon="👥" color="red" />
+          <Stat label="Active Staff" value={credentials.filter(u => u.status === 'Active').length} icon="✅" color="red" />
+          <Stat label="Pending Leaves" value={leaveRequests.filter(l => l.status === 'Pending').length} icon="⏳" color="red" />
+          <Stat label="Activity Count" value={activityLogs.length} icon="📋" color="red" />
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card title="Staff Load Balancing">
+        <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card title="Quick Actions" className="border-l-4 border-red-600">
               <div className="space-y-3">
-                <div>
-                  <p className="text-gray-600">Average Patients per Doctor</p>
-                  <p className="text-2xl font-bold">{metrics.avgDocLoad}</p>
+                <button
+                  onClick={() => setShowCredentialModal(true)}
+                  className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition"
+                >
+                  ➕ Create New User
+                </button>
+                <button className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition">
+                  📊 Generate Report
+                </button>
+                <button className="w-full bg-gradient-to-r from-pink-600 to-pink-700 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition">
+                  ⚙️ System Settings
+                </button>
+              </div>
+            </Card>
+
+            <Card title="System Status" className="border-l-4 border-red-600">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                  <span className="font-semibold text-red-800">API Status</span>
+                  <span className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-xs font-bold">🟢 Online</span>
                 </div>
-                <div>
-                  <p className="text-gray-600">Average Patients per Practitioner</p>
-                  <p className="text-2xl font-bold">{metrics.avgPracLoad}</p>
+                <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                  <span className="font-semibold text-red-800">Database</span>
+                  <span className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-xs font-bold">🟢 Connected</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                  <span className="font-semibold text-red-800">Active Users Online</span>
+                  <span className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-xs font-bold">42 users</span>
                 </div>
               </div>
             </Card>
 
-            <Card title="Today's Activity">
-              <p className="text-gray-600 mb-2">Sessions Conducted Today</p>
-              <p className="text-3xl font-bold text-sky-600">{metrics.sessionToday}</p>
+            <Card title="Recent Activity" className="md:col-span-2 border-l-4 border-red-600">
+              <div className="space-y-3 max-h-72 overflow-y-auto">
+                {activityLogs.slice(0, 5).map(log => (
+                  <div key={log.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-red-50 transition">
+                    <div>
+                      <p className="font-semibold text-gray-800">{log.action}</p>
+                      <p className="text-sm text-gray-600">{log.user}</p>
+                    </div>
+                    <span className="text-xs text-gray-500">{log.timestamp}</span>
+                  </div>
+                ))}
+              </div>
             </Card>
           </div>
-        </>
-      )}
-
-      {activeTab === 'users' && (
-        <>
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold">{t('admin.users')}</h2>
-            <button
-              onClick={() => setShowCreateUserModal(true)}
-              className="btn-primary"
-            >
-              Create User
-            </button>
-          </div>
-
-          <Card>
-            <Table
-              columns={[
-                { key: 'name', label: 'Name' },
-                { key: 'username', label: 'Username' },
-                { key: 'role', label: 'Role', render: (val) => <span className="badge badge-primary">{val}</span> },
-                { key: 'enabled', label: 'Status', render: (val) => <span className={val ? 'badge badge-success' : 'badge'}>{val ? 'Enabled' : 'Disabled'}</span> }
-              ]}
-              data={users}
-            />
-          </Card>
-        </>
-      )}
-
-      {activeTab === 'leaves' && (
-        <Card title={t('admin.leaves')}>
-          <Table
-            columns={[
-              { key: 'userId', label: 'User ID' },
-              { key: 'fromDate', label: 'From' },
-              { key: 'toDate', label: 'To' },
-              { key: 'status', label: 'Status', render: (val) => <span className="badge badge-warning">{val}</span> },
-              {
-                key: 'id',
-                label: 'Action',
-                render: (val, row) =>
-                  row.status === 'PENDING' && (
-                    <div className="flex gap-2">
-                      <button onClick={() => handleApproveLeave(val)} className="text-green-600 hover:text-green-700 font-semibold">
-                        Approve
-                      </button>
-                      <button onClick={() => handleRejectLeave(val)} className="text-red-600 hover:text-red-700 font-semibold">
-                        Reject
-                      </button>
-                    </div>
-                  )
-              }
-            ]}
-            data={leaves}
-          />
-        </Card>
-      )}
-
-      {activeTab === 'logs' && (
-        <AuditLogs />
-      )}
-
-      <CreateUserModal isOpen={showCreateUserModal} onClose={() => setShowCreateUserModal(false)} onSuccess={loadDashboardData} />
-    </div>
-  );
-};
-
-const AuditLogs = () => {
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ action: '', startDate: '', endDate: '' });
-
-  useEffect(() => {
-    loadLogs();
-  }, []);
-
-  const loadLogs = async () => {
-    try {
-      setLoading(true);
-      const response = await adminAPI.getLogs(filters);
-      setLogs(response.data.logs);
-    } catch (err) {
-      console.error('Failed to load logs');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) return <LoadingSpinner />;
-
-  return (
-    <Card title="Audit Logs (Immutable)">
-      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
-        <p className="text-sm text-blue-800">
-          ✓ All logs are immutable and hash-chained for tamper detection
-        </p>
-      </div>
-
-      <Table
-        columns={[
-          { key: 'timestamp', label: 'Time', render: (val) => new Date(val).toLocaleString() },
-          { key: 'action', label: 'Action' },
-          { key: 'userRole', label: 'Role' },
-          { key: 'details', label: 'Details' }
-        ]}
-        data={logs.slice(0, 50)}
-      />
-    </Card>
-  );
-};
-
-const CreateUserModal = ({ isOpen, onClose, onSuccess }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    username: '',
-    password: '',
-    role: 'DOCTOR',
-    specialty: '',
-    contact: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      await adminAPI.createUser(formData);
-      setFormData({ name: '', username: '', password: '', role: 'DOCTOR', specialty: '', contact: '' });
-      onSuccess();
-      onClose();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create user');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Modal isOpen={isOpen} title="Create New User" onClose={onClose}>
-      {error && <ErrorAlert message={error} />}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <FormGroup
-          label="Name"
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          required
-          disabled={loading}
-        />
-
-        <FormGroup
-          label="Username"
-          type="text"
-          value={formData.username}
-          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-          required
-          disabled={loading}
-        />
-
-        <FormGroup
-          label="Password"
-          type="password"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          required
-          disabled={loading}
-        />
-
-        <FormGroup
-          label="Role"
-          type="select"
-          value={formData.role}
-          onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-          disabled={loading}
-        >
-          <option value="DOCTOR">Doctor</option>
-          <option value="PRACTITIONER">Practitioner</option>
-          <option value="RECEPTION">Reception</option>
-        </FormGroup>
-
-        {(formData.role === 'DOCTOR' || formData.role === 'PRACTITIONER') && (
-          <FormGroup
-            label="Specialty"
-            type="text"
-            value={formData.specialty}
-            onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
-            disabled={loading}
-          />
         )}
 
-        <FormGroup
-          label="Contact"
-          type="tel"
-          value={formData.contact}
-          onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-          disabled={loading}
-        />
+        {activeTab === 'users' && (
+          <Card title="User Management" className="border-l-4 border-red-600">
+            {loading ? <LoadingSpinner /> : <Table columns={[
+              { key: 'role', label: 'Role' },
+              { key: 'name', label: 'Name' },
+              { key: 'email', label: 'Email' },
+              { key: 'created', label: 'Created' },
+              { key: 'status', label: 'Status', render: (status) => <span className={`px-3 py-1 rounded-full text-xs font-bold ${status === 'Active' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>{status}</span> },
+            ]} data={credentials} />}
+            <button
+              onClick={() => setShowCredentialModal(true)}
+              className="mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition"
+            >
+              ➕ Add New User
+            </button>
+          </Card>
+        )}
 
-        <div className="flex gap-2">
-          <button type="submit" className="flex-1 btn-primary" disabled={loading}>
-            Create
-          </button>
-          <button type="button" onClick={onClose} className="flex-1 btn-secondary" disabled={loading}>
-            Cancel
-          </button>
-        </div>
-      </form>
-    </Modal>
+        {activeTab === 'leaves' && (
+          <Card title="Leave Request Management" className="border-l-4 border-red-600">
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <div className="space-y-4">
+                {leaveRequests.map(req => (
+                  <div key={req.id} className="p-4 border-2 border-red-100 rounded-lg hover:bg-red-50 transition">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-bold text-red-800">{req.name}</p>
+                        <p className="text-sm text-gray-600">{req.reason}</p>
+                        <p className="text-xs text-gray-500">{req.dateFrom} to {req.dateTo}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        {req.status === 'Pending' ? (
+                          <>
+                            <button
+                              onClick={() => handleLeaveAction(req.id, 'approve')}
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition"
+                            >
+                              ✅ Approve
+                            </button>
+                            <button
+                              onClick={() => handleLeaveAction(req.id, 'reject')}
+                              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition"
+                            >
+                              ❌ Reject
+                            </button>
+                          </>
+                        ) : (
+                           <span className={`px-3 py-1 rounded-full text-xs font-bold ${req.status === 'Approved' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+                              {req.status}
+                           </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {activeTab === 'reassignments' && (
+          <Card title="System Reassignments" className="border-l-4 border-red-600">
+            {loading ? <LoadingSpinner /> : (
+              <Table columns={[
+                { key: 'patient', label: 'Patient' },
+                { key: 'currentPractitioner', label: 'Current' },
+                { key: 'newPractitioner', label: 'New' },
+                { key: 'status', label: 'Status', render: (status) => <span className={`px-3 py-1 rounded-full text-xs font-bold ${status === 'Completed' ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'}`}>{status}</span> },
+                 {
+                  key: 'id',
+                  label: 'Action',
+                  render: (id, row) => row.status === 'Pending' ? (
+                    <button
+                      onClick={() => handleReassignment(id)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm transition"
+                    >
+                      Confirm
+                    </button>
+                  ) : <span className="text-green-600 font-bold">Done</span>
+                }
+              ]} data={reassignmentData} />
+            )}
+          </Card>
+        )}
+
+        {activeTab === 'audit' && (
+          <Card title="Audit Logs" className="border-l-4 border-red-600">
+            {loading ? <LoadingSpinner /> : <Table columns={auditColumns} data={activityLogs} />}
+          </Card>
+        )}
+
+        <Modal isOpen={showCredentialModal} title="Create New User" onClose={() => setShowCredentialModal(false)}>
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              <FormGroup
+                label="Role"
+                type="select"
+                value={credentialForm.role}
+                onChange={(e) => setCredentialForm({...credentialForm, role: e.target.value})}
+              >
+                <option value="doctor">Doctor</option>
+                <option value="practitioner">Practitioner</option>
+                <option value="reception">Reception</option>
+              </FormGroup>
+
+              <FormGroup
+                label="Full Name"
+                value={credentialForm.name}
+                onChange={(e) => setCredentialForm({...credentialForm, name: e.target.value})}
+                error={formErrors.name}
+                required
+              />
+
+              <FormGroup
+                label="Email Address"
+                type="email"
+                value={credentialForm.email}
+                onChange={(e) => setCredentialForm({...credentialForm, email: e.target.value})}
+                error={formErrors.email}
+                required
+              />
+
+              <FormGroup
+                label="Password"
+                type="password"
+                value={credentialForm.password}
+                onChange={(e) => setCredentialForm({...credentialForm, password: e.target.value})}
+                error={formErrors.password}
+                required
+              />
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleCreateCredential}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition"
+                >
+                  ✅ Create
+                </button>
+                <button
+                  onClick={() => setShowCredentialModal(false)}
+                  className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          )}
+        </Modal>
+      </div>
+    </div>
   );
 };

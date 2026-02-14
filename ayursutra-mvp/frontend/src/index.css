@@ -3,113 +3,78 @@
 @tailwind utilities;
 
 :root {
-  --primary-color: #b45309;
-  --secondary-color: #f59e0b;
-  --success-color: #22c55e;
-  --warning-color: #f59e0b;
-  --danger-color: #ef4444;
-  --dark-bg: #1f2937;
-  --light-bg: #fffbf0;
+  --bg-color: #fdfbf7; /* A very clean, warm off-white */
+  --text-main: #1f2937;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  /* No heavy gradients, just a solid, easy-on-the-eyes color */
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #fffbf0 0%, #f3e8d8 100%);
-  min-height: 100vh;
 }
 
-.card {
-  @apply bg-white rounded-xl shadow-lg p-6 border border-amber-100 hover:shadow-xl transition;
-}
-
-.btn-primary {
-  @apply bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-700 hover:to-yellow-600 text-white font-bold py-3 px-6 rounded-lg transition shadow-lg;
-}
-
-.btn-secondary {
-  @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition;
-}
-
-.btn-danger {
-  @apply bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg;
-}
-
-.btn-success {
-  @apply bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg;
-}
-
-.badge {
-  @apply inline-block px-4 py-2 rounded-full text-sm font-bold;
-}
-
-.badge-primary {
-  @apply badge bg-amber-100 text-amber-800;
-}
-
-.badge-success {
-  @apply badge bg-green-100 text-green-800;
-}
-
-.badge-warning {
-  @apply badge bg-yellow-100 text-yellow-800;
-}
-
-.badge-danger {
-  @apply badge bg-red-100 text-red-800;
-}
-
-/* Animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+@layer components {
+  /* 1. Cards: Clean white box, subtle border, soft shadow */
+  .card {
+    @apply bg-white rounded-lg border border-gray-200 shadow-sm p-6;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  /* 2. Buttons: Solid colors (no gradients), clean text */
+  .btn-base {
+    @apply px-5 py-2.5 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1;
   }
-}
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
+  .btn-primary {
+    @apply btn-base bg-amber-600 text-white hover:bg-amber-700 focus:ring-amber-500;
+  }
 
-/* Form inputs */
-input:focus, select:focus, textarea:focus {
-  @apply border-amber-600 shadow-md;
-}
+  .btn-secondary {
+    @apply btn-base bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-300;
+  }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+  .btn-danger {
+    @apply btn-base bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
 
-::-webkit-scrollbar-track {
-  background: #f3e8d8;
-}
+  .btn-success {
+    @apply btn-base bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: #b45309;
-  border-radius: 4px;
-}
+  /* 3. Badges: Soft background, dark text, no borders */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #92400e;
-}
+  .badge-primary {
+    @apply badge bg-amber-100 text-amber-800;
+  }
 
-.badge-warning {
-  @apply badge bg-yellow-100 text-yellow-800;
-}
+  .badge-success {
+    @apply badge bg-emerald-100 text-emerald-800;
+  }
 
-.modal {
-  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
-}
+  .badge-warning {
+    @apply badge bg-yellow-100 text-yellow-800;
+  }
 
-.modal-content {
-  @apply bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl;
+  .badge-danger {
+    @apply badge bg-red-100 text-red-800;
+  }
+
+  /* 4. Inputs: Standard modern border */
+  input, select, textarea {
+    @apply block w-full rounded-md border-gray-300 shadow-sm 
+    focus:border-amber-500 focus:ring-amber-500 sm:text-sm py-2 px-3 border;
+  }
+
+  /* 5. Modal: Simple overlay */
+  .modal {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50;
+  }
+
+  .modal-content {
+    @apply bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden;
+  }
 }

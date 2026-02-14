@@ -13,11 +13,11 @@ import {
 } from './pages/AuthPages';
 
 // Dashboards
-import { AdminDashboard } from './dashboards/AdminDashboard';
-import { DoctorDashboard } from './dashboards/DoctorDashboard';
-import { PractitionerDashboard } from './dashboards/PractitionerDashboard';
-import { PatientDashboard } from './dashboards/PatientDashboard';
-import { ReceptionDashboard } from './dashboards/ReceptionDashboard';
+import AdminDashboard from './dashboards/AdminDashboard';
+import DoctorDashboard from './dashboards/DoctorDashboard';
+import PractitionerDashboard from './dashboards/PractitionerDashboard';
+import PatientDashboard from './dashboards/PatientDashboard';
+import ReceptionDashboard from './dashboards/ReceptionDashboard';
 
 // Route wrapper
 const ProtectedRoute = ({ children, requiredRole }) => {
