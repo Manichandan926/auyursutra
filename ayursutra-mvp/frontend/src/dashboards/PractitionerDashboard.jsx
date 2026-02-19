@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { 
-  Card, Stat, Modal, FormGroup, LoadingSpinner, ErrorAlert, SuccessAlert, TabBar, Table 
+import {
+  Card, Modal, FormGroup, ErrorAlert, SuccessAlert, TabBar
 } from '../components/Common';
 
 export default function PractitionerDashboard() {
-  const [activeTab, setActiveTab] = useState('patients');
+  const [activeTab, setActiveTab] = useState('schedule');
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -14,9 +14,9 @@ export default function PractitionerDashboard() {
   const [formErrors, setFormErrors] = useState({});
 
   const [sessionForm, setSessionForm] = useState({
-    sessionDate: '',
-    duration: '30',
-    progressPercentage: '',
+    sessionDate: new Date().toISOString().split('T')[0],
+    duration: '45',
+    progressPercentage: '50',
     notes: '',
     observations: ''
   });
@@ -27,7 +27,7 @@ export default function PractitionerDashboard() {
     reason: ''
   });
 
-  // Mock data - Patients assigned to this practitioner
+  // Mock data 
   const [assignedPatients, setAssignedPatients] = useState([
     { id: 1, name: 'Raj Sharma', dosha: 'Vata', therapyType: 'Abhyanga', doctor: 'Dr. Raj Kumar', progressPercentage: 65, lastSession: '2026-02-13' },
     { id: 2, name: 'Maya Rao', dosha: 'Pitta', therapyType: 'Shirodhara', doctor: 'Dr. Sharma', progressPercentage: 45, lastSession: '2026-02-12' },
@@ -40,20 +40,6 @@ export default function PractitionerDashboard() {
     { id: 3, time: '11:30 AM', patient: 'Vikram Das', therapy: 'Nasya', room: '103', status: 'Scheduled' }
   ]);
 
-  const [weekSchedule, setWeekSchedule] = useState([
-    { day: 'Mon', sessionCount: 4, totalMinutes: 120 },
-    { day: 'Tue', sessionCount: 5, totalMinutes: 150 },
-    { day: 'Wed', sessionCount: 4, totalMinutes: 120 },
-    { day: 'Thu', sessionCount: 3, totalMinutes: 90 },
-    { day: 'Fri', sessionCount: 5, totalMinutes: 150 }
-  ]);
-
-  const [sessionHistory, setSessionHistory] = useState([
-    { id: 1, date: '2026-02-13', patient: 'Raj Sharma', therapy: 'Abhyanga', duration: 30, notes: 'Good relaxation' },
-    { id: 2, date: '2026-02-12', patient: 'Maya Rao', therapy: 'Shirodhara', duration: 45, notes: 'Excellent response' },
-    { id: 3, date: '2026-02-11', patient: 'Vikram Das', therapy: 'Nasya', duration: 20, notes: 'Clear nasal passages' }
-  ]);
-
   const stats = {
     assignedPatients: assignedPatients.length,
     completedSessionsToday: todaySchedule.filter(s => s.status === 'Completed').length,
@@ -63,439 +49,242 @@ export default function PractitionerDashboard() {
 
   const validateSessionForm = () => {
     const errors = {};
-    if (!sessionForm.sessionDate) errors.sessionDate = 'Session date is required';
-    if (!sessionForm.duration) errors.duration = 'Duration is required';
-    if (!sessionForm.progressPercentage) errors.progressPercentage = 'Progress percentage is required';
     if (!sessionForm.notes.trim()) errors.notes = 'Session notes are required';
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const validateLeaveForm = () => {
-    const errors = {};
-    if (!leaveForm.dateFrom) errors.dateFrom = 'Start date is required';
-    if (!leaveForm.dateTo) errors.dateTo = 'End date is required';
-    if (!leaveForm.reason.trim()) errors.reason = 'Reason is required';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleRecordSession = async () => {
     if (!validateSessionForm()) return;
-    
     setLoading(true);
     await new Promise(r => setTimeout(r, 1000));
-    
-    const updatedPatients = assignedPatients.map(p => 
-      p.id === selectedPatient.id 
-        ? {...p, progressPercentage: Math.max(p.progressPercentage, parseInt(sessionForm.progressPercentage)), lastSession: sessionForm.sessionDate}
-        : p
-    );
-    setAssignedPatients(updatedPatients);
-    
-    setSuccessMsg(`✅ Session recorded - Progress updated to ${sessionForm.progressPercentage}%`);
+    setSuccessMsg(`✅ Session recorded successfully!`);
     setShowSessionModal(false);
-    setSessionForm({ sessionDate: '', duration: '30', progressPercentage: '', notes: '', observations: '' });
-    setFormErrors({});
-    setLoading(false);
-    setTimeout(() => setSuccessMsg(''), 3000);
-  };
-
-  const handleRequestLeave = async () => {
-    if (!validateLeaveForm()) return;
-    
-    setLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    
-    setSuccessMsg(`✅ Leave request submitted for ${leaveForm.dateFrom} to ${leaveForm.dateTo}`);
-    setShowLeaveModal(false);
-    setLeaveForm({ dateFrom: '', dateTo: '', reason: '' });
-    setFormErrors({});
     setLoading(false);
     setTimeout(() => setSuccessMsg(''), 3000);
   };
 
   const tabs = [
-    { id: 'patients', label: '👥 My Patients', icon: '👨‍⚕️' },
-    { id: 'sessions', label: '📅 Sessions', icon: '🕐' },
-    { id: 'schedule', label: '📊 Weekly Schedule', icon: '📈' },
-    { id: 'performance', label: '⭐ Performance', icon: '🏆' }
+    { id: 'schedule', label: "Today's Schedule", icon: '📅' },
+    { id: 'patients', label: 'My Patients', icon: '👥' },
+    { id: 'performance', label: 'Performance', icon: '⭐' }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50">
+    <div className="min-h-screen bg-ayur-cream font-sans">
       <div className="container mx-auto px-4 py-8">
         {errorMsg && <ErrorAlert message={errorMsg} onClose={() => setErrorMsg('')} />}
         {successMsg && <SuccessAlert message={successMsg} onClose={() => setSuccessMsg('')} />}
 
-        <div className="mb-8">
-          <h1 className="text-4xl font-black text-purple-700 mb-2 flex items-center gap-3">
-            💆 Practitioner Dashboard
-          </h1>
-          <p className="text-gray-600 font-semibold">Manage Therapy Sessions & Patient Progress</p>
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+          <div className="text-center md:text-left">
+            <h1 className="text-3xl md:text-4xl font-serif font-bold text-ayur-forest mb-2">
+              💆 Practitioner Portal
+            </h1>
+            <p className="text-ayur-earth font-semibold">Ready to heal? You have {todaySchedule.length} sessions today.</p>
+          </div>
+          <button
+            onClick={() => setShowLeaveModal(true)}
+            className="bg-white text-ayur-forest border-2 border-ayur-forest font-bold py-2 px-6 rounded-full hover:bg-ayur-forest hover:text-white transition shadow-sm"
+          >
+            ✈️ Request Leave
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="border-l-4 border-purple-600">
-            <div className="text-center">
-              <div className="text-4xl font-black text-purple-600 mb-2">{stats.assignedPatients}</div>
-              <div className="text-gray-700 font-semibold text-sm">Assigned Patients 👥</div>
-            </div>
-          </Card>
-          <Card className="border-l-4 border-purple-600">
-            <div className="text-center">
-              <div className="text-4xl font-black text-purple-600 mb-2">{stats.completedSessionsToday}</div>
-              <div className="text-gray-700 font-semibold text-sm">Sessions Today ✅</div>
-            </div>
-          </Card>
-          <Card className="border-l-4 border-purple-600">
-            <div className="text-center">
-              <div className="text-4xl font-black text-purple-600 mb-2">⭐{stats.satisfactionRating}</div>
-              <div className="text-gray-700 font-semibold text-sm">Patient Rating 🎯</div>
-            </div>
-          </Card>
-          <Card className="border-l-4 border-purple-600">
-            <div className="text-center">
-              <div className="text-4xl font-black text-purple-600 mb-2">{stats.successRate}%</div>
-              <div className="text-gray-700 font-semibold text-sm">Success Rate 📈</div>
-            </div>
-          </Card>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-ayur-100 text-center transform hover:scale-105 transition duration-300">
+            <div className="text-3xl font-bold text-ayur-forest">{stats.completedSessionsToday}</div>
+            <div className="text-xs font-bold text-gray-500 uppercase mt-1">Sessions Done</div>
+          </div>
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-ayur-100 text-center transform hover:scale-105 transition duration-300">
+            <div className="text-3xl font-bold text-ayur-forest">{stats.assignedPatients}</div>
+            <div className="text-xs font-bold text-gray-500 uppercase mt-1">Total Patients</div>
+          </div>
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-ayur-100 text-center transform hover:scale-105 transition duration-300">
+            <div className="text-3xl font-bold text-ayur-saffron">{stats.satisfactionRating} ⭐</div>
+            <div className="text-xs font-bold text-gray-500 uppercase mt-1">Rating</div>
+          </div>
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-ayur-100 text-center transform hover:scale-105 transition duration-300">
+            <div className="text-3xl font-bold text-ayur-forest">{stats.successRate}%</div>
+            <div className="text-xs font-bold text-gray-500 uppercase mt-1">Success Rate</div>
+          </div>
         </div>
 
         <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {activeTab === 'patients' && (
-          <Card title="👥 My Assigned Patients" className="border-l-4 border-purple-600">
-            <Table
-              columns={[
-                { key: 'name', label: '👤 Patient Name' },
-                { key: 'dosha', label: '🌿 Dosha Type' },
-                { key: 'therapyType', label: '💆 Therapy' },
-                { key: 'doctor', label: '👨‍⚕️ Doctor' },
-                { 
-                  key: 'progressPercentage', 
-                  label: 'Progress',
-                  render: (progress) => (
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 bg-gray-200 rounded-full h-2">
-                        <div className="bg-purple-600 h-2 rounded-full" style={{width: `${progress}%`}}></div>
+        <div className="mt-6 animation-fade-in">
+          {activeTab === 'schedule' && (
+            <Card title="📅 Today's Appointments" className="border-l-4 border-ayur-forest shadow-md">
+              <div className="space-y-4">
+                {todaySchedule.map(session => (
+                  <div key={session.id} className="flex flex-col md:flex-row items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100 hover:shadow-md transition">
+                    <div className="flex items-center gap-4 w-full md:w-auto mb-4 md:mb-0">
+                      <div className="text-xl font-bold text-ayur-forest bg-white p-3 rounded-lg shadow-sm w-24 text-center border border-gray-100">
+                        {session.time}
                       </div>
-                      <span className="text-sm font-bold text-purple-600">{progress}%</span>
-                    </div>
-                  )
-                },
-                { 
-                  key: 'id', 
-                  label: 'Action',
-                  render: (id, row) => (
-                    <button
-                      onClick={() => {
-                        setSelectedPatient(row);
-                        setShowSessionModal(true);
-                      }}
-                      className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded text-sm transition"
-                    >
-                      Record Session
-                    </button>
-                  )
-                }
-              ]}
-              data={assignedPatients}
-            />
-          </Card>
-        )}
-
-        {activeTab === 'sessions' && (
-          <div className="space-y-6">
-            <Card title="📅 Today's Schedule" className="border-l-4 border-purple-600">
-              <Table
-                columns={[
-                  { key: 'time', label: '🕐 Time' },
-                  { key: 'patient', label: '👤 Patient' },
-                  { key: 'therapy', label: '💆 Therapy' },
-                  { key: 'room', label: '🏨 Room' },
-                  { 
-                    key: 'status', 
-                    label: 'Status',
-                    render: (status) => (
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        status === 'Completed' ? 'bg-green-200 text-green-800' :
-                        status === 'In Progress' ? 'bg-blue-200 text-blue-800' :
-                        'bg-yellow-200 text-yellow-800'
-                      }`}>
-                        {status === 'Completed' ? '✅' : status === 'In Progress' ? '⏳' : '📅'} {status}
-                      </span>
-                    )
-                  }
-                ]}
-                data={todaySchedule}
-              />
-            </Card>
-
-            <Card title="📋 Recent Session History" className="border-l-4 border-purple-600">
-              <div className="space-y-3">
-                {sessionHistory.map(session => (
-                  <div key={session.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                    <div className="flex justify-between items-start mb-2">
                       <div>
-                        <p className="font-bold text-gray-800">{session.patient}</p>
-                        <p className="text-sm text-gray-600">{session.therapy} - {session.duration} mins</p>
+                        <h3 className="font-bold text-lg text-gray-800">{session.patient}</h3>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span>💆 {session.therapy}</span>
+                          <span>•</span>
+                          <span>📍 Room {session.room}</span>
+                        </div>
                       </div>
-                      <span className="text-xs bg-purple-200 text-purple-800 px-3 py-1 rounded-full font-bold">
-                        📅 {session.date}
-                      </span>
                     </div>
-                    <p className="text-sm text-gray-700 italic">💬 {session.notes}</p>
+                    <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                      <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide ${session.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                          session.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
+                            'bg-yellow-100 text-yellow-700'
+                        }`}>
+                        {session.status}
+                      </span>
+                      {session.status !== 'Completed' && (
+                        <button
+                          onClick={() => {
+                            const patient = assignedPatients.find(p => p.name === session.patient);
+                            setSelectedPatient(patient || { name: session.patient, id: 0 });
+                            setShowSessionModal(true);
+                          }}
+                          className="bg-ayur-forest text-white px-5 py-2 rounded-lg font-bold hover:bg-ayur-700 transition shadow-sm"
+                        >
+                          ✅ Complete
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
+                {todaySchedule.length === 0 && (
+                  <div className="text-center py-10 text-gray-500">
+                    <p className="text-4xl mb-2">☕</p>
+                    <p>No sessions scheduled for today. Enjoy your break!</p>
+                  </div>
+                )}
               </div>
             </Card>
-          </div>
-        )}
+          )}
 
-        {activeTab === 'schedule' && (
-          <Card title="📊 Weekly Schedule Overview" className="border-l-4 border-purple-600">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-bold text-gray-800 mb-4">Sessions Per Day</h3>
-                <div className="flex items-end gap-2 h-48 bg-purple-50 p-4 rounded-lg">
-                  {weekSchedule.map((item, idx) => (
-                    <div key={idx} className="flex-1 text-center">
-                      <div 
-                        className="bg-purple-600 rounded-t w-full hover:bg-purple-700 transition cursor-pointer"
-                        style={{height: `${item.sessionCount * 30}px`}}
-                        title={`${item.sessionCount} sessions, ${item.totalMinutes} mins`}
-                      ></div>
-                      <p className="text-xs text-gray-600 mt-2 font-bold">{item.day}</p>
-                      <p className="text-xs text-purple-600 font-semibold">{item.sessionCount}</p>
+          {activeTab === 'patients' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {assignedPatients.map(patient => (
+                <div key={patient.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition card-hover group">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="w-12 h-12 bg-ayur-50 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition">
+                      👤
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <span className="bg-ayur-50 text-ayur-forest px-2 py-1 rounded text-xs font-bold border border-ayur-100">
+                      {patient.dosha}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-xl text-gray-800 mb-1">{patient.name}</h3>
+                  <p className="text-sm text-gray-500 mb-4">{patient.therapyType}</p>
 
-              <div>
-                <h3 className="font-bold text-gray-800 mb-4">Weekly Statistics</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700 font-semibold">Total Sessions</span>
-                    <span className="text-2xl font-black text-purple-600">21</span>
+                  <div className="mb-4">
+                    <div className="flex justify-between text-xs font-bold text-gray-400 mb-1">
+                      <span>Wellness Journey</span>
+                      <span>{patient.progressPercentage}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                      <div className="bg-ayur-forest h-2 rounded-full transition-all duration-1000" style={{ width: `${patient.progressPercentage}%` }}></div>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700 font-semibold">Total Duration</span>
-                    <span className="text-2xl font-black text-purple-600">630 mins</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700 font-semibold">Avg Sessions/Day</span>
-                    <span className="text-2xl font-black text-purple-600">4.2</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700 font-semibold">Busiest Day</span>
-                    <span className="text-2xl font-black text-purple-600">Friday</span>
-                  </div>
+
                   <button
-                    onClick={() => setShowLeaveModal(true)}
-                    className="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg transition"
+                    onClick={() => {
+                      setSelectedPatient(patient);
+                      setShowSessionModal(true);
+                    }}
+                    className="w-full border-2 border-ayur-forest text-ayur-forest font-bold py-2 rounded-lg hover:bg-ayur-forest hover:text-white transition"
                   >
-                    ✈️ Request Leave
+                    📝 View Notes
                   </button>
                 </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'performance' && (
+            <Card title="⭐ My Performance Report" className="bg-white shadow-md border-l-4 border-ayur-saffron">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="text-6xl mb-4">🏆</div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">You are doing excellent work!</h2>
+                <p className="text-gray-500 max-w-md">Your patients have rated their satisfaction at <span className="font-bold text-ayur-forest">4.8/5.0</span> this month. Keep up the healing spirit!</p>
+              </div>
+            </Card>
+          )}
+        </div>
+
+        {/* Session Modal */}
+        <Modal isOpen={showSessionModal} title="📝 Session Details" onClose={() => setShowSessionModal(false)}>
+          <div className="space-y-4">
+            <div className="bg-ayur-50 p-4 rounded-lg flex items-center gap-3">
+              <div className="text-3xl">👤</div>
+              <div>
+                <p className="text-xs text-gray-500 font-bold uppercase">Patient</p>
+                <p className="font-bold text-lg text-ayur-forest">{selectedPatient?.name}</p>
               </div>
             </div>
-          </Card>
-        )}
 
-        {activeTab === 'performance' && (
-          <Card title="⭐ Performance Metrics" className="border-l-4 border-purple-600">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="border border-purple-200 rounded-lg p-6 bg-purple-50">
-                <p className="text-xs text-gray-500 font-semibold mb-2">PATIENT SATISFACTION</p>
-                <div className="flex items-center gap-3">
-                  <div className="text-5xl font-black text-purple-600">4.8</div>
-                  <div className="text-yellow-500 text-2xl">⭐⭐⭐⭐⭐</div>
-                </div>
-                <p className="text-sm text-gray-600 mt-3">Based on 127 patient ratings</p>
-              </div>
-
-              <div className="border border-purple-200 rounded-lg p-6 bg-purple-50">
-                <p className="text-xs text-gray-500 font-semibold mb-2">THERAPY SUCCESS RATE</p>
-                <div className="flex items-center gap-3">
-                  <div className="text-5xl font-black text-purple-600">92%</div>
-                  <div className="text-green-600 text-2xl">✅</div>
-                </div>
-                <p className="text-sm text-gray-600 mt-3">Patient improvement documented</p>
-              </div>
-            </div>
-
-            <div className="border border-purple-200 rounded-lg p-6">
-              <h3 className="font-bold text-gray-800 mb-4">Performance Breakdown</h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-semibold text-gray-700">Abhyanga Sessions</span>
-                    <span className="text-sm font-bold text-purple-600">94%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-purple-600 h-2 rounded-full" style={{width: '94%'}}></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-semibold text-gray-700">Shirodhara Sessions</span>
-                    <span className="text-sm font-bold text-purple-600">88%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-purple-600 h-2 rounded-full" style={{width: '88%'}}></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-semibold text-gray-700">Nasya Sessions</span>
-                    <span className="text-sm font-bold text-purple-600">90%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-purple-600 h-2 rounded-full" style={{width: '90%'}}></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-semibold text-gray-700">Patient Attendance</span>
-                    <span className="text-sm font-bold text-purple-600">98%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-600 h-2 rounded-full" style={{width: '98%'}}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        <Modal isOpen={showSessionModal} title="📝 Record Session" onClose={() => setShowSessionModal(false)}>
-          {loading ? (
-            <LoadingSpinner />
-          ) : (
-            <>
-              <p className="mb-4 font-semibold text-gray-800">
-                Patient: <span className="text-purple-600">{selectedPatient?.name}</span>
-              </p>
-
+            <div className="grid grid-cols-2 gap-4">
               <FormGroup
-                label="Session Date"
+                label="Date"
                 type="date"
                 value={sessionForm.sessionDate}
-                onChange={(e) => setSessionForm({...sessionForm, sessionDate: e.target.value})}
-                error={formErrors.sessionDate}
-                required
+                onChange={(e) => setSessionForm({ ...sessionForm, sessionDate: e.target.value })}
               />
-
               <FormGroup
-                label="Duration (minutes)"
+                label="Duration (mins)"
                 type="number"
                 value={sessionForm.duration}
-                onChange={(e) => setSessionForm({...sessionForm, duration: e.target.value})}
-                error={formErrors.duration}
-                required
+                onChange={(e) => setSessionForm({ ...sessionForm, duration: e.target.value })}
               />
+            </div>
 
-              <FormGroup
-                label="Progress Percentage"
-                type="number"
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Progress Update</label>
+              <input
+                type="range"
                 min="0"
                 max="100"
                 value={sessionForm.progressPercentage}
-                onChange={(e) => setSessionForm({...sessionForm, progressPercentage: e.target.value})}
-                error={formErrors.progressPercentage}
-                required
+                onChange={(e) => setSessionForm({ ...sessionForm, progressPercentage: e.target.value })}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-ayur-forest"
               />
+              <div className="text-right text-sm font-bold text-ayur-forest mt-1">{sessionForm.progressPercentage}%</div>
+            </div>
 
-              <FormGroup
-                label="Session Notes"
-                type="textarea"
-                value={sessionForm.notes}
-                onChange={(e) => setSessionForm({...sessionForm, notes: e.target.value})}
-                error={formErrors.notes}
-                required
-                placeholder="Record treatment details, patient response, etc."
-              />
+            <FormGroup
+              label="Therapist Notes"
+              type="textarea"
+              className="h-32"
+              placeholder="Enter observations and treatment details..."
+              value={sessionForm.notes}
+              onChange={(e) => setSessionForm({ ...sessionForm, notes: e.target.value })}
+              error={formErrors.notes}
+            />
 
-              <FormGroup
-                label="Additional Observations"
-                type="textarea"
-                value={sessionForm.observations}
-                onChange={(e) => setSessionForm({...sessionForm, observations: e.target.value})}
-                placeholder="Any special observations or recommendations..."
-              />
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleRecordSession}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg transition"
-                >
-                  ✅ Save Session
-                </button>
-                <button
-                  onClick={() => setShowSessionModal(false)}
-                  className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 rounded-lg transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </>
-          )}
+            <div className="flex gap-3 pt-2">
+              <button onClick={handleRecordSession} className="flex-1 bg-ayur-forest text-white font-bold py-3.5 rounded-xl hover:bg-ayur-700 transition shadow-lg">
+                💾 Save Report
+              </button>
+              <button onClick={() => setShowSessionModal(false)} className="flex-1 bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl hover:bg-gray-300 transition">
+                Cancel
+              </button>
+            </div>
+          </div>
         </Modal>
 
-        <Modal isOpen={showLeaveModal} title="🏖️ Request Leave" onClose={() => setShowLeaveModal(false)}>
-          {loading ? (
-            <LoadingSpinner />
-          ) : (
-            <>
-              <FormGroup
-                label="Leave From"
-                type="date"
-                value={leaveForm.dateFrom}
-                onChange={(e) => setLeaveForm({...leaveForm, dateFrom: e.target.value})}
-                error={formErrors.dateFrom}
-                required
-              />
-
-              <FormGroup
-                label="Leave Until"
-                type="date"
-                value={leaveForm.dateTo}
-                onChange={(e) => setLeaveForm({...leaveForm, dateTo: e.target.value})}
-                error={formErrors.dateTo}
-                required
-              />
-
-              <FormGroup
-                label="Reason for Leave"
-                type="textarea"
-                value={leaveForm.reason}
-                onChange={(e) => setLeaveForm({...leaveForm, reason: e.target.value})}
-                error={formErrors.reason}
-                required
-                placeholder="Please provide a detailed reason..."
-              />
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleRequestLeave}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg transition"
-                >
-                  ✅ Submit Request
-                </button>
-                <button
-                  onClick={() => setShowLeaveModal(false)}
-                  className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 rounded-lg transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </>
-          )}
+        {/* Leave Modal */}
+        <Modal isOpen={showLeaveModal} title="🏖️ Request Time Off" onClose={() => setShowLeaveModal(false)}>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormGroup label="From" type="date" value={leaveForm.dateFrom} onChange={(e) => setLeaveForm({ ...leaveForm, dateFrom: e.target.value })} />
+              <FormGroup label="Until" type="date" value={leaveForm.dateTo} onChange={(e) => setLeaveForm({ ...leaveForm, dateTo: e.target.value })} />
+            </div>
+            <FormGroup label="Reason" type="textarea" value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })} />
+            <button className="w-full bg-ayur-forest text-white font-bold py-3 rounded-xl">Submit Request</button>
+          </div>
         </Modal>
       </div>
     </div>
