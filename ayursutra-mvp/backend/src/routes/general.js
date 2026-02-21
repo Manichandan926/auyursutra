@@ -14,17 +14,22 @@ router.get('/health', (req, res) => {
   const datastore = require('../data/datastore');
   const auditLogger = require('../utils/logger');
 
+  const allUsers = datastore.getAllUsers();
+  const allPatients = datastore.getAllPatients();
+  const allData = datastore.export();
+
   const health = {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
+    database: 'SQLite',
     data: {
-      users: datastore.users.length,
-      patients: datastore.patients.length,
-      therapies: datastore.therapies.length,
-      sessions: datastore.sessions.length,
-      leaves: datastore.leaves.length,
-      notifications: datastore.notifications.length,
+      users: allUsers.length,
+      patients: allPatients.length,
+      therapies: allData.therapies.length,
+      sessions: allData.sessions.length,
+      leaves: allData.leaves.length,
+      notifications: allData.notifications.length,
       auditLogs: auditLogger.logs.length
     },
     logIntegrity: auditLogger.verifyIntegrity().valid ? 'VERIFIED' : 'TAMPERED'
@@ -153,9 +158,10 @@ router.get('/reports/clinic-metrics', authMiddleware, sessionTimeout, (req, res)
     const datastore = require('../data/datastore');
     const therapyService = require('../services/therapyService');
 
-    const patients = datastore.patients;
-    const therapies = datastore.therapies;
-    const sessions = datastore.sessions;
+    const exported = datastore.export();
+    const patients = exported.patients;
+    const therapies = exported.therapies;
+    const sessions = exported.sessions;
     const doctors = datastore.getAllUsers('DOCTOR').filter(d => d.enabled);
     const practitioners = datastore.getAllUsers('PRACTITIONER').filter(p => p.enabled);
 

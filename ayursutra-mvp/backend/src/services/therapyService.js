@@ -53,19 +53,35 @@ class TherapyService {
 
     datastore.addSession(session);
 
-    // Update therapy progress
+    // Update therapy progress (average of all sessions)
     const allSessions = datastore.getTherapySessions(therapyId);
     const avgProgress = Math.round(
       allSessions.reduce((sum, s) => sum + s.progressPercent, 0) / allSessions.length
     );
-    datastore.updateTherapy(therapyId, { progressPercent: avgProgress });
+
+    // ── THERAPY STATE MACHINE ─────────────────────────────────────────────────
+    // SCHEDULED → ONGOING when first session is recorded
+    // ONGOING   → COMPLETED when average progress reaches 100%
+    let newStatus = therapy.status;
+    if (therapy.status === 'SCHEDULED') {
+      newStatus = 'ONGOING';
+    }
+    if (avgProgress >= 100 && therapy.status !== 'COMPLETED') {
+      newStatus = 'COMPLETED';
+    }
+
+    const updatedTherapy = datastore.updateTherapy(therapyId, {
+      progressPercent: avgProgress,
+      status: newStatus,
+      endDate: newStatus === 'COMPLETED' ? new Date().toISOString() : therapy.endDate
+    });
 
     auditLogger.createLog(
       practitionerId,
       'PRACTITIONER',
       'SESSION_RECORDED',
       therapy.id,
-      `Recorded session for patient ${therapy.patientId}`
+      `Recorded session for patient ${therapy.patientId}; therapy progress: ${avgProgress}%${newStatus === 'COMPLETED' ? ' [COMPLETED]' : ''}`
     );
 
     return session;

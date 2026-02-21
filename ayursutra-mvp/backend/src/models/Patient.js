@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 class Patient {
   constructor(data) {
     this.id = data.id || `p_${uuidv4().substring(0, 8)}`;
+    this.userId = data.userId || null;          // links to users.id (the login account)
     this.name = data.name;
     this.dob = data.dob; // YYYY-MM-DD
     this.age = data.age;
@@ -18,6 +19,9 @@ class Patient {
     this.therapies = data.therapies || []; // array of therapy IDs
     this.emergencyContact = data.emergencyContact || '';
     this.medicalHistory = data.medicalHistory || '';
+    this.isEmergency = data.isEmergency || false;
+    this.visitToken = data.visitToken || null;
+    this.checkedInAt = data.checkedInAt || null;
     this.createdAt = data.createdAt || new Date().toISOString();
     this.registrationType = data.registrationType || 'NEW'; // NEW | RETURNING
   }

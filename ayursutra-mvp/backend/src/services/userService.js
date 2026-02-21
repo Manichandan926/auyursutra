@@ -152,6 +152,41 @@ class UserService {
       };
     });
   }
+
+  /**
+   * Soft-delete user (disable account + mark as deleted)
+   */
+  deleteUser(userId, adminId) {
+    const user = datastore.findUserById(userId);
+    if (!user) throw new Error('User not found');
+
+    datastore.updateUser(userId, { enabled: false, deleted: true });
+
+    auditLogger.createLog(
+      adminId, 'ADMIN', 'ADMIN_DELETED_USER', userId,
+      `Soft-deleted user ${user.name} (${user.username})`
+    );
+
+    return true;
+  }
+
+  /**
+   * Admin changes a user's password
+   */
+  async changePassword(userId, newPassword, adminId) {
+    const user = datastore.findUserById(userId);
+    if (!user) throw new Error('User not found');
+
+    const passwordHash = await passwordUtils.hashPassword(newPassword);
+    const updated = datastore.updateUser(userId, { passwordHash });
+
+    auditLogger.createLog(
+      adminId, 'ADMIN', 'ADMIN_CHANGED_PASSWORD', userId,
+      `Admin changed password for user ${user.name}`
+    );
+
+    return updated.toResponse();
+  }
 }
 
 module.exports = new UserService();

@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const config = require('./config');
+require('./data/database'); // initialize SQLite schema on startup
 const { authMiddleware, sessionTimeout } = require('./middleware/auth');
 const { requestLogging, errorHandler } = require('./middleware/errorHandler');
 
@@ -52,7 +53,7 @@ app.post('/api/seed-data', (req, res) => {
     const seedData = require('./data/seedData');
 
     // Check if already seeded
-    if (datastore.users.length > 0) {
+    if (datastore.getAllUsers().length > 0) {
       return res.json({ success: false, message: 'Data already exists. Clear first.' });
     }
 
@@ -114,7 +115,7 @@ app.post('/api/seed-data', (req, res) => {
       }
 
       // Therapies
-      patients = datastore.patients;
+      const patients = datastore.getAllPatients();
       for (let therapy of seedData.therapies) {
         const pat = patients[Math.floor(Math.random() * patients.length)];
         const doc = datastore.findUserById(pat.assignedDoctorId);
