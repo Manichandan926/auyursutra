@@ -41,6 +41,7 @@ export const adminAPI = {
   createUser: (data) => api.post('/admin/users', data),
   listUsers: (role) => api.get('/admin/users', { params: { role } }),
   toggleUser: (userId, enabled) => api.patch(`/admin/users/${userId}`, { enabled }),
+  deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
   getLogs: (filters) => api.get('/admin/logs', { params: filters }),
   getDashboard: () => api.get('/admin/dashboard/overview'),
   getLeaves: () => api.get('/admin/leaves'),
@@ -79,7 +80,8 @@ export const patientAPI = {
     api.get('/patient/notifications', { params: { unreadOnly } }),
   markNotificationAsRead: (notificationId) =>
     api.patch(`/patient/notifications/${notificationId}/read`),
-  getProfile: () => api.get('/patient/profile')
+  getProfile: () => api.get('/patient/profile'),
+  completeProfile: (data) => api.post('/patient/complete-profile', data),
 };
 
 export const receptionAPI = {

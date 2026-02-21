@@ -55,7 +55,7 @@ Ready for client connections...
 
 ---
 
-## 3. API Health Check
+## 3. API Health Checknpm run dev
 
 ```bash
 curl http://localhost:5000/api/health
